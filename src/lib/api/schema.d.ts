@@ -403,6 +403,87 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Contracts */
+        get: operations["contracts_search"];
+        put?: never;
+        /**
+         * Generate Contract
+         * @description Genera el contrato de una cotización aceptada, pendiente de firma (HU41).
+         */
+        post: operations["contracts_generate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contracts/{contract_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Contract
+         * @description El contrato con su firma, su anulación y sus pagos.
+         */
+        get: operations["contracts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contracts/{contract_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Contract
+         * @description Anula con motivo; si hubo devolución, se registra su monto (R-CON-3).
+         */
+        post: operations["contracts_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contracts/{contract_id}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign Contract
+         * @description Registra la firma y el pago del adelanto en un solo paso (HU42, R-CON-1).
+         */
+        post: operations["contracts_sign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/dashboard": {
         parameters: {
             query?: never;
@@ -633,6 +714,20 @@ export interface components {
          * @enum {string}
          */
         AccessResult: "SUCCESS" | "INVALID_CREDENTIALS" | "INACTIVE_USER";
+        /** CancellationOut */
+        CancellationOut: {
+            /**
+             * Cancelled At
+             * Format: date-time
+             */
+            cancelled_at: string;
+            /** Note */
+            note: string | null;
+            /** Reason */
+            reason: string;
+            /** Refund Cents */
+            refund_cents: number | null;
+        };
         /** CategoryIn */
         CategoryIn: {
             /** Name */
@@ -695,6 +790,148 @@ export interface components {
             name: string;
             /** Phone */
             phone: string;
+        };
+        /** ContractCancelIn */
+        ContractCancelIn: {
+            /** Note */
+            note?: string | null;
+            /** Reason */
+            reason: string;
+            /** @description Cómo se devolvió */
+            refund?: components["schemas"]["PaymentIn"] | null;
+            /**
+             * Refund Cents
+             * @description Solo si se devolvió dinero
+             */
+            refund_cents?: number | null;
+        };
+        /** ContractGenerateIn */
+        ContractGenerateIn: {
+            /**
+             * Advance Cents
+             * @description Adelanto pactado. Si se omite: 50 % del total
+             */
+            advance_cents?: number | null;
+            /**
+             * Quote Id
+             * Format: uuid
+             */
+            quote_id: string;
+        };
+        /** ContractOut */
+        ContractOut: {
+            /** Advance Cents */
+            advance_cents: number;
+            /** Balance Cents */
+            balance_cents: number;
+            /**
+             * Balance Due Date
+             * Format: date
+             */
+            balance_due_date: string;
+            /**
+             * Can Become Event
+             * @description Firmado y con adelanto pagado (CA-42.3)
+             */
+            can_become_event: boolean;
+            cancellation: components["schemas"]["CancellationOut"] | null;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Payments */
+            payments: components["schemas"]["PaymentOut"][];
+            /** Quote Code */
+            quote_code: string;
+            /**
+             * Quote Id
+             * Format: uuid
+             */
+            quote_id: string;
+            signature: components["schemas"]["SignatureOut"] | null;
+            status: components["schemas"]["ContractStatus"];
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** ContractPageOut */
+        ContractPageOut: {
+            /** Items */
+            items: components["schemas"]["ContractSummaryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** ContractSignIn */
+        ContractSignIn: {
+            /** @description El pago del adelanto pactado (R-CON-1) */
+            advance: components["schemas"]["PaymentIn"];
+            /**
+             * Signed On
+             * Format: date
+             */
+            signed_on: string;
+            /** Signer Name */
+            signer_name: string;
+        };
+        /**
+         * ContractStatus
+         * @enum {string}
+         */
+        ContractStatus: "PENDING_SIGNATURE" | "SIGNED" | "CANCELLED";
+        /** ContractSummaryOut */
+        ContractSummaryOut: {
+            /** Advance Cents */
+            advance_cents: number;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Quote Id
+             * Format: uuid
+             */
+            quote_id: string;
+            status: components["schemas"]["ContractStatus"];
+            /** Total Cents */
+            total_cents: number;
         };
         /** DashboardOut */
         DashboardOut: {
@@ -815,11 +1052,54 @@ export interface components {
             permissions: components["schemas"]["Permission"][];
             role: components["schemas"]["Role"];
         };
+        /** PaymentIn */
+        PaymentIn: {
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /**
+             * Reference
+             * @description N.º de operación, voucher, etc.
+             */
+            reference?: string | null;
+        };
+        /**
+         * PaymentKind
+         * @enum {string}
+         */
+        PaymentKind: "ADVANCE" | "REFUND";
+        /**
+         * PaymentMethod
+         * @enum {string}
+         */
+        PaymentMethod: "CASH" | "TRANSFER" | "CARD" | "YAPE_PLIN";
+        /** PaymentOut */
+        PaymentOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /** Reference */
+            reference: string | null;
+        };
         /**
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record";
         /**
          * PriceUnit
          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
@@ -936,6 +1216,11 @@ export interface components {
             client_name: string;
             /** Code */
             code: string;
+            /**
+             * Contract Id
+             * @description El contrato de esta cotización
+             */
+            contract_id?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -1093,6 +1378,21 @@ export interface components {
             price_unit: components["schemas"]["PriceUnit"];
             /** Reference Price Cents */
             reference_price_cents: number;
+        };
+        /** SignatureOut */
+        SignatureOut: {
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Signed On
+             * Format: date
+             */
+            signed_on: string;
+            /** Signer Name */
+            signer_name: string;
         };
         /** TokenOut */
         TokenOut: {
@@ -2381,6 +2681,328 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contracts_search: {
+        parameters: {
+            query?: {
+                /** @description Parte del código o del nombre del cliente */
+                text?: string;
+                status?: components["schemas"]["ContractStatus"] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contracts_generate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractGenerateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.quote_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.quote_not_accepted`, `contract.already_exists` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.advance_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    contracts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contracts_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractCancelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.already_cancelled` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    contracts_sign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractSignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_pending` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.signer_required`, `payment.*`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };

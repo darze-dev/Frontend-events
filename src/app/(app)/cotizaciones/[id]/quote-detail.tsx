@@ -17,6 +17,7 @@ import { EVENT_TYPE_LABELS, NEXT_STATUSES, STATUS_STYLES, formatDate, formatTime
 
 import { QuoteEditor } from "../quote-editor";
 import { QuoteStatusBadge } from "../quote-status-badge";
+import { ContractAction } from "./contract-action";
 import { DownloadPdfButton } from "./download-pdf-button";
 
 type Target = Exclude<QuoteStatus, "EXPIRED">;
@@ -97,6 +98,7 @@ export function QuoteDetail() {
           </div>
           <div className="flex flex-wrap gap-2">
             <DownloadPdfButton quote={quote} onError={setError} />
+            <ContractAction quote={quote} />
             {next.map((status) => {
               const action = ACTIONS[status];
               return (
