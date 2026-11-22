@@ -80,6 +80,13 @@ const paths = {
       <path d="m22 7-10 6L2 7" />
     </>
   ),
+  catalog: (
+    <>
+      <path d="M21 8 12 3 3 8v8l9 5 9-5Z" />
+      <path d="m3 8 9 5 9-5" />
+      <path d="M12 13v8" />
+    </>
+  ),
   logout: (
     <>
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

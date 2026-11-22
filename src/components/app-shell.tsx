@@ -23,7 +23,10 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
   { title: "General", items: [{ href: "/inicio", label: "Inicio", icon: "dashboard" }] },
   {
     title: "Gestión comercial",
-    items: [{ href: "/clientes", label: "Clientes", icon: "users", permission: "clients:manage" }],
+    items: [
+      { href: "/clientes", label: "Clientes", icon: "users", permission: "clients:manage" },
+      { href: "/catalogo", label: "Catálogo", icon: "catalog", permission: "catalog:read" },
+    ],
   },
 ];
 
