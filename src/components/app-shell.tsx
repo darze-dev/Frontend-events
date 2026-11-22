@@ -28,6 +28,13 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
       { href: "/catalogo", label: "Catálogo", icon: "catalog", permission: "catalog:read" },
     ],
   },
+  {
+    title: "Administración",
+    items: [
+      { href: "/usuarios", label: "Usuarios", icon: "shield", permission: "users:manage" },
+      { href: "/historial", label: "Historial de accesos", icon: "history", permission: "access_log:read" },
+    ],
+  },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
