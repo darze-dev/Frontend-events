@@ -1,9 +1,14 @@
 "use client";
 
-// Pantalla de clientes (HU04): buscar, registrar, editar contacto y desactivar.
-// Todo se lee y se guarda en la API real (/v1/clients).
+// Pantalla de clientes (HU04): buscar, registrar, editar contacto, desactivar y reactivar.
+// Computadora y tablet: tabla. Celular: tarjetas. El formulario se abre en una ventana.
 import { useCallback, useEffect, useState } from "react";
 
+import { Icon } from "@/components/icons";
+import { ErrorAlert } from "@/components/ui/alert";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { fieldClass, primaryButton } from "@/components/ui/styles";
 import { api, type Client } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 
@@ -16,6 +21,7 @@ export function ClientsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Client | "new" | null>(null);
+  const [deactivating, setDeactivating] = useState<Client | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -38,38 +44,138 @@ export function ClientsScreen() {
     return () => clearTimeout(timer);
   }, [load]);
 
-  async function toggleActive(client: Client) {
+  async function changeStatus(client: Client) {
     const params = { path: { client_id: client.id } };
     const { error: apiError } = client.active
       ? await api.POST("/v1/clients/{client_id}/deactivate", { params })
       : await api.POST("/v1/clients/{client_id}/activate", { params });
-    if (apiError) {
-      setError(errorMessage(apiError));
-    } else {
-      await load();
-    }
+    setDeactivating(null);
+    if (apiError) setError(errorMessage(apiError));
+    else await load();
   }
+
+  // Desactivar pide confirmación; reactivar no, porque no hace daño.
+  const onStatusClick = (client: Client) =>
+    client.active ? setDeactivating(client) : void changeStatus(client);
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between gap-4">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Clientes</h1>
-          <p className="text-sm text-zinc-500">Busca por nombre, documento o teléfono.</p>
+          <p className="mt-1 text-sm text-muted">Personas y empresas que contratan los servicios de Darze.</p>
         </div>
-        <button
-          onClick={() => setEditing("new")}
-          className="rounded-md bg-amber-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-amber-400"
-        >
-          + Nuevo cliente
+        <button type="button" onClick={() => setEditing("new")} className={primaryButton}>
+          <Icon name="plus" className="size-4" />
+          Nuevo cliente
         </button>
       </header>
 
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative w-full sm:max-w-md">
+          <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 mt-[3px] size-4 -translate-y-1/2 text-muted" />
+          <input
+            type="search"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder="Buscar por nombre, documento o teléfono"
+            aria-label="Buscar clientes"
+            className={`${fieldClass} pl-9`}
+          />
+        </div>
+        <label className="flex items-center gap-2 text-sm text-muted">
+          <input
+            type="checkbox"
+            checked={includeInactive}
+            onChange={(event) => setIncludeInactive(event.target.checked)}
+            className="size-4 accent-primary"
+          />
+          Incluir desactivados
+        </label>
+      </div>
+
+      {error && <ErrorAlert message={error} />}
+
+      {loading && clients.length === 0 ? (
+        <p className="py-10 text-center text-sm text-muted">Cargando clientes…</p>
+      ) : clients.length === 0 ? (
+        <EmptyState searching={text.trim() !== ""} includeInactive={includeInactive} />
+      ) : (
+        <>
+          {/* Computadora y tablet */}
+          <div className="hidden overflow-hidden rounded-xl border border-line bg-surface md:block">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface-muted text-xs uppercase tracking-wide text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Nombre</th>
+                  <th className="px-4 py-3 font-medium">Documento</th>
+                  <th className="px-4 py-3 font-medium">Teléfono</th>
+                  <th className="hidden px-4 py-3 font-medium lg:table-cell">Correo</th>
+                  <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3">
+                    <span className="sr-only">Acciones</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {clients.map((client) => (
+                  <tr key={client.id} className="hover:bg-surface-muted/50">
+                    <td className="px-4 py-3 font-medium">{client.name}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted">
+                      {client.document_type} {client.document_number}
+                    </td>
+                    <td className="px-4 py-3 text-muted">{client.phone}</td>
+                    <td className="hidden px-4 py-3 text-muted lg:table-cell">{client.email ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <StatusBadge active={client.active} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <RowActions client={client} onEdit={setEditing} onStatus={onStatusClick} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Celular */}
+          <ul className="space-y-3 md:hidden">
+            {clients.map((client) => (
+              <li key={client.id} className="rounded-xl border border-line bg-surface p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{client.name}</p>
+                    <p className="text-sm text-muted">
+                      {client.document_type} {client.document_number}
+                    </p>
+                  </div>
+                  <StatusBadge active={client.active} />
+                </div>
+                <div className="mt-3 space-y-1 text-sm text-muted">
+                  <p className="flex items-center gap-2">
+                    <Icon name="phone" className="size-4" />
+                    {client.phone}
+                  </p>
+                  {client.email && (
+                    <p className="flex items-center gap-2 break-all">
+                      <Icon name="mail" className="size-4 shrink-0" />
+                      {client.email}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-4 border-t border-line pt-3">
+                  <RowActions client={client} onEdit={setEditing} onStatus={onStatusClick} />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       {editing !== null && (
         <ClientForm
-          key={editing === "new" ? "new" : editing.id}
           client={editing === "new" ? null : editing}
-          onCancel={() => setEditing(null)}
+          onClose={() => setEditing(null)}
           onSaved={() => {
             setEditing(null);
             void load();
@@ -77,83 +183,64 @@ export function ClientsScreen() {
         />
       )}
 
-      <div className="flex flex-wrap items-center gap-4">
-        <input
-          type="search"
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="Ej.: jose ramirez, 44125896, 987654321"
-          aria-label="Buscar clientes"
-          className="w-full max-w-md rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm outline-none focus:border-amber-500 dark:border-zinc-700 dark:bg-zinc-900"
+      {deactivating && (
+        <ConfirmDialog
+          title="Desactivar cliente"
+          message={`"${deactivating.name}" dejará de aparecer en las búsquedas. No se borra: sus cotizaciones y eventos se conservan, y puedes reactivarlo cuando quieras.`}
+          confirmLabel="Desactivar"
+          onConfirm={() => changeStatus(deactivating)}
+          onClose={() => setDeactivating(null)}
         />
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={includeInactive}
-            onChange={(event) => setIncludeInactive(event.target.checked)}
-          />
-          Mostrar desactivados
-        </label>
-      </div>
-
-      {error && (
-        <p role="alert" className="rounded-md bg-red-100 px-3 py-2 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
-          {error}
-        </p>
       )}
+    </div>
+  );
+}
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900">
-            <tr>
-              <th className="px-4 py-3 font-medium">Nombre</th>
-              <th className="px-4 py-3 font-medium">Documento</th>
-              <th className="px-4 py-3 font-medium">Teléfono</th>
-              <th className="px-4 py-3 font-medium">Correo</th>
-              <th className="px-4 py-3 font-medium">Estado</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {clients.map((client) => (
-              <tr key={client.id} className="border-t border-zinc-200 dark:border-zinc-800">
-                <td className="px-4 py-3 font-medium">{client.name}</td>
-                <td className="px-4 py-3">
-                  {client.document_type} {client.document_number}
-                </td>
-                <td className="px-4 py-3">{client.phone}</td>
-                <td className="px-4 py-3">{client.email ?? "—"}</td>
-                <td className="px-4 py-3">
-                  <span
-                    className={
-                      client.active
-                        ? "rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                        : "rounded-full bg-zinc-200 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
-                    }
-                  >
-                    {client.active ? "Activo" : "Desactivado"}
-                  </span>
-                </td>
-                <td className="space-x-3 whitespace-nowrap px-4 py-3 text-right">
-                  <button onClick={() => setEditing(client)} className="text-amber-600 hover:underline">
-                    Editar
-                  </button>
-                  <button onClick={() => toggleActive(client)} className="text-zinc-500 hover:underline">
-                    {client.active ? "Desactivar" : "Activar"}
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {!loading && clients.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
-                  No hay clientes que coincidan con la búsqueda.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+function RowActions({
+  client,
+  onEdit,
+  onStatus,
+}: {
+  client: Client;
+  onEdit: (client: Client) => void;
+  onStatus: (client: Client) => void;
+}) {
+  return (
+    <div className="flex items-center justify-end gap-1">
+      <button
+        type="button"
+        onClick={() => onEdit(client)}
+        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-primary hover:bg-primary-soft"
+      >
+        <Icon name="pencil" className="size-4" />
+        Editar
+      </button>
+      <button
+        type="button"
+        onClick={() => onStatus(client)}
+        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm hover:bg-surface-muted ${
+          client.active ? "text-muted hover:text-danger" : "text-success"
+        }`}
+      >
+        <Icon name="power" className="size-4" />
+        {client.active ? "Desactivar" : "Activar"}
+      </button>
+    </div>
+  );
+}
+
+function EmptyState({ searching, includeInactive }: { searching: boolean; includeInactive: boolean }) {
+  return (
+    <div className="rounded-xl border border-dashed border-line bg-surface px-6 py-12 text-center">
+      <span className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-surface-muted text-muted">
+        <Icon name="users" />
+      </span>
+      <p className="font-medium">{searching ? "Ningún cliente coincide con la búsqueda" : "No hay clientes activos"}</p>
+      <p className="mt-1 text-sm text-muted">
+        {includeInactive
+          ? "Prueba con otro nombre, documento o teléfono, o registra un cliente nuevo."
+          : "Marca “Incluir desactivados” para ver también los clientes desactivados."}
+      </p>
     </div>
   );
 }
