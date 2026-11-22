@@ -433,7 +433,7 @@ export interface paths {
         };
         /**
          * Get Contract
-         * @description El contrato con su firma, su anulación y sus pagos.
+         * @description El contrato con su firma, su anulación, sus pagos y su evento, si ya lo es.
          */
         get: operations["contracts_get"];
         put?: never;
@@ -496,6 +496,67 @@ export interface paths {
          * @description Indicadores reales del negocio. Caja y stock se agregan cuando existan sus módulos.
          */
         get: operations["dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Events
+         * @description Eventos de la fecha más próxima a la más lejana.
+         */
+        get: operations["events_search"];
+        put?: never;
+        /**
+         * Convert Contract
+         * @description Convierte un contrato firmado y con adelanto en evento programado (HU10).
+         */
+        post: operations["events_convert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/coordinators": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Coordinators
+         * @description Usuarios activos que pueden coordinar un evento (R-EVT-2).
+         */
+        get: operations["events_coordinators"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Event */
+        get: operations["events_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -860,6 +921,11 @@ export interface components {
              */
             event_date: string;
             /**
+             * Event Id
+             * @description El evento, si el contrato ya se convirtió (HU10)
+             */
+            event_id: string | null;
+            /**
              * Id
              * Format: uuid
              */
@@ -932,6 +998,16 @@ export interface components {
             status: components["schemas"]["ContractStatus"];
             /** Total Cents */
             total_cents: number;
+        };
+        /** CoordinatorOut */
+        CoordinatorOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
         };
         /** DashboardOut */
         DashboardOut: {
@@ -1006,6 +1082,163 @@ export interface components {
          * @enum {string}
          */
         DocumentType: "DNI" | "RUC";
+        /** EventConvertIn */
+        EventConvertIn: {
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Coordinator Id
+             * @description Responsable de coordinación. Si se omite: quien convierte
+             */
+            coordinator_id?: string | null;
+        };
+        /** EventOut */
+        EventOut: {
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Coordinator Id
+             * Format: uuid
+             */
+            coordinator_id: string;
+            /**
+             * Coordinator Name
+             * @description Vacío si el usuario ya no está activo
+             */
+            coordinator_name: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Ends Next Day */
+            ends_next_day: boolean;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Quote Code */
+            quote_code: string;
+            /**
+             * Quote Id
+             * Format: uuid
+             */
+            quote_id: string;
+            /** Services */
+            services: components["schemas"]["EventServiceOut"][];
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["EventStatus"];
+            /** Venue */
+            venue: string;
+        };
+        /** EventPageOut */
+        EventPageOut: {
+            /** Items */
+            items: components["schemas"]["EventSummaryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** EventServiceOut */
+        EventServiceOut: {
+            /** Description */
+            description: string;
+            kind: components["schemas"]["LineKind"];
+            /** Quantity */
+            quantity: number;
+            /** Service Id */
+            service_id: string | null;
+            unit: components["schemas"]["LineUnit"];
+        };
+        /**
+         * EventStatus
+         * @description DOMAIN.md §3. HU10 solo crea eventos programados; los demás estados llegan con HU11.
+         * @enum {string}
+         */
+        EventStatus: "SCHEDULED" | "CONFIRMED" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
+        /** EventSummaryOut */
+        EventSummaryOut: {
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Coordinator Id
+             * Format: uuid
+             */
+            coordinator_id: string;
+            /** Coordinator Name */
+            coordinator_name: string | null;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["EventStatus"];
+            /** Venue */
+            venue: string;
+        };
         /**
          * EventType
          * @description Lista fija de tipos de evento (DOMAIN.md §4, regla 13).
@@ -1099,7 +1332,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read";
         /**
          * PriceUnit
          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
@@ -2916,7 +3149,7 @@ export interface operations {
                     "application/json": components["schemas"]["Problem"];
                 };
             };
-            /** @description `contract.already_cancelled` */
+            /** @description `contract.already_cancelled`, `contract.has_event` */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3039,6 +3272,226 @@ export interface operations {
             };
             /** @description `auth.forbidden` */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_search: {
+        parameters: {
+            query?: {
+                /** @description Parte del código o del nombre del cliente */
+                text?: string;
+                status?: components["schemas"]["EventStatus"] | null;
+                date_from?: string | null;
+                date_to?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_convert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventConvertIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.contract_not_ready`, `event.already_exists` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.coordinator_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_coordinators: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CoordinatorOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

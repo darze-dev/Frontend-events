@@ -151,6 +151,13 @@ const paths = {
       <circle cx="11" cy="11" r="2" />
     </>
   ),
+  calendar: (
+    <>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+      <path d="m9 16 2 2 4-4" />
+    </>
+  ),
   logout: (
     <>
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />

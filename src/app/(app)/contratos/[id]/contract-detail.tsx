@@ -3,10 +3,12 @@
 // Detalle del contrato (HU41–HU42): montos, firma, pagos y anulación.
 // Pendiente de firma → "Registrar firma y adelanto" (un solo paso, R-CON-1).
 // Pendiente o firmado → "Anular", con motivo y devolución opcional (R-CON-3).
+// Firmado → "Convertir en evento" (HU10); si ya es evento, "Ver evento" y no se anula (R-EVT-3).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { useAuth } from "@/components/auth-provider";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
 import { primaryButton, secondaryButton } from "@/components/ui/styles";
@@ -18,6 +20,7 @@ import { formatDate } from "@/lib/quotes";
 
 import { ContractStatusBadge } from "../contract-status-badge";
 import { CancelForm } from "./cancel-form";
+import { ConvertForm } from "./convert-form";
 import { SignForm } from "./sign-form";
 
 export function ContractDetail() {
@@ -26,7 +29,8 @@ export function ContractDetail() {
   const [contract, setContract] = useState<Contract | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(justCreated ? "Contrato generado: pendiente de firma." : null);
-  const [dialog, setDialog] = useState<"sign" | "cancel" | null>(null);
+  const [dialog, setDialog] = useState<"sign" | "cancel" | "convert" | null>(null);
+  const { can } = useAuth();
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/contracts/{contract_id}", {
@@ -87,7 +91,19 @@ export function ContractDetail() {
                 Registrar firma y adelanto
               </button>
             )}
-            {contract.status !== "CANCELLED" && (
+            {contract.event_id && (
+              <Link href={`/eventos/${contract.event_id}`} className={primaryButton}>
+                <Icon name="calendar" className="size-4" />
+                Ver evento
+              </Link>
+            )}
+            {!contract.event_id && contract.can_become_event && can("events:manage") && (
+              <button type="button" onClick={() => setDialog("convert")} className={primaryButton}>
+                <Icon name="calendar" className="size-4" />
+                Convertir en evento
+              </button>
+            )}
+            {contract.status !== "CANCELLED" && !contract.event_id && (
               <button type="button" onClick={() => setDialog("cancel")} className={`${secondaryButton} hover:text-danger`}>
                 <Icon name="close" className="size-4" />
                 Anular
@@ -101,9 +117,14 @@ export function ContractDetail() {
             {notice}
           </div>
         )}
-        {contract.status === "SIGNED" && contract.can_become_event && (
+        {!contract.event_id && contract.can_become_event && (
           <p className="rounded-lg bg-primary-soft p-3 text-sm text-primary">
-            Firmado y con adelanto pagado: está listo para convertirse en evento (HU10, próximamente).
+            Firmado y con adelanto pagado: está listo para convertirse en evento.
+          </p>
+        )}
+        {contract.event_id && (
+          <p className="rounded-lg bg-surface-muted p-3 text-sm text-muted">
+            Este contrato ya es un evento. Para anularlo, hay que cancelar el evento.
           </p>
         )}
       </header>
@@ -177,6 +198,7 @@ export function ContractDetail() {
       {dialog === "sign" && (
         <SignForm contract={contract} onClose={() => setDialog(null)} onSaved={(c) => saved(c, "Firma y adelanto registrados.")} />
       )}
+      {dialog === "convert" && <ConvertForm contract={contract} onClose={() => setDialog(null)} />}
       {dialog === "cancel" && (
         <CancelForm contract={contract} onClose={() => setDialog(null)} onSaved={(c) => saved(c, "Contrato anulado.")} />
       )}
