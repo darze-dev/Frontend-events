@@ -9,6 +9,9 @@ const MESSAGES: Record<string, string> = {
   "client.phone_invalid": "El teléfono debe tener entre 7 y 15 dígitos.",
   "client.email_invalid": "El correo no es válido.",
   "client.not_found": "No se encontró el cliente.",
+  "auth.invalid_credentials": "Correo o contraseña incorrectos, o la cuenta está desactivada.",
+  "auth.forbidden": "Tu rol no tiene permiso para esta operación.",
+  "auth.session_expired": "Tu sesión terminó. Vuelve a iniciar sesión.",
 };
 
 export function errorMessage(error: unknown): string {
