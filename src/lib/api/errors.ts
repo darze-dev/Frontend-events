@@ -48,6 +48,7 @@ const MESSAGES: Record<string, string> = {
   "quote.not_editable": "Solo se modifica una cotización en borrador. Si fue enviada, devuélvela a borrador.",
   "quote.invalid_transition": "Ese cambio de estado no está permitido.",
   "quote.expired": "La cotización venció: no cambia de estado. Crea una nueva.",
+  "quote.pdf_not_available": "El PDF solo se descarga de una cotización enviada o aceptada.",
   "auth.invalid_credentials": "Correo o contraseña incorrectos, o la cuenta está desactivada.",
   "auth.forbidden": "Tu rol no tiene permiso para esta operación.",
   "auth.session_expired": "Tu sesión terminó. Vuelve a iniciar sesión.",
