@@ -17,6 +17,7 @@ import { EVENT_TYPE_LABELS, NEXT_STATUSES, STATUS_STYLES, formatDate, formatTime
 
 import { QuoteEditor } from "../quote-editor";
 import { QuoteStatusBadge } from "../quote-status-badge";
+import { DownloadPdfButton } from "./download-pdf-button";
 
 type Target = Exclude<QuoteStatus, "EXPIRED">;
 
@@ -94,24 +95,23 @@ export function QuoteDetail() {
               {quote.client_name} · {EVENT_TYPE_LABELS[quote.event_type]} · vigente hasta {formatDate(quote.valid_until)}
             </p>
           </div>
-          {next.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {next.map((status) => {
-                const action = ACTIONS[status];
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => (action.confirm ? setConfirming(status) : void changeStatus(status))}
-                    className={action.primary ? primaryButton : secondaryButton}
-                  >
-                    <Icon name={action.icon} className="size-4" />
-                    {action.label}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            <DownloadPdfButton quote={quote} onError={setError} />
+            {next.map((status) => {
+              const action = ACTIONS[status];
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => (action.confirm ? setConfirming(status) : void changeStatus(status))}
+                  className={action.primary ? primaryButton : secondaryButton}
+                >
+                  <Icon name={action.icon} className="size-4" />
+                  {action.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
         {notice && (
           <div role="status" className="flex items-center gap-2 rounded-lg bg-success/10 p-3 text-sm text-success">
@@ -120,6 +120,11 @@ export function QuoteDetail() {
           </div>
         )}
         {error && <ErrorAlert message={error} />}
+        {quote.status === "DRAFT" && (
+          <p className="text-sm text-muted">
+            Cuando esté lista, márcala como enviada: así se habilita “Descargar PDF” para entregarla al cliente.
+          </p>
+        )}
         {quote.status === "SENT" && (
           <p className="rounded-lg bg-primary-soft p-3 text-sm text-primary">
             Fue enviada al cliente. Para modificarla, usa “Volver a borrador”.
