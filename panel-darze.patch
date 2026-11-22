@@ -1,0 +1,451 @@
+diff --git a/src/app/(app)/inicio/admin-dashboard.tsx b/src/app/(app)/inicio/admin-dashboard.tsx
+new file mode 100644
+index 0000000..5dfe3b5
+--- /dev/null
++++ b/src/app/(app)/inicio/admin-dashboard.tsx
+@@ -0,0 +1,184 @@
++"use client";
++
++// Panel del administrador (HU31, primera parte): solo indicadores con datos reales.
++// Caja y stock se agregarán cuando existan sus módulos; no se muestran en cero para no
++// presentar un número que el sistema todavía no calcula.
++import Link from "next/link";
++import { useCallback, useEffect, useState } from "react";
++
++import { Icon, type IconName } from "@/components/icons";
++import { ErrorAlert } from "@/components/ui/alert";
++import { fieldClass } from "@/components/ui/styles";
++import { api, type Dashboard, type QuoteStatus } from "@/lib/api/client";
++import { errorMessage } from "@/lib/api/errors";
++import { formatSoles } from "@/lib/money";
++import { EVENT_TYPE_LABELS, formatDate, todayInLima } from "@/lib/quotes";
++
++import { QuoteStatusBadge } from "../cotizaciones/quote-status-badge";
++
++const monthName = new Intl.DateTimeFormat("es-PE", { month: "long", year: "numeric", timeZone: "UTC" });
++
++export function AdminDashboard() {
++  const [month, setMonth] = useState(todayInLima().slice(0, 7));
++  const [data, setData] = useState<Dashboard | null>(null);
++  const [error, setError] = useState<string | null>(null);
++
++  const load = useCallback(async () => {
++    const { data: body, error: apiError } = await api.GET("/v1/dashboard", {
++      params: { query: { month } },
++    });
++    if (body) {
++      setData(body);
++      setError(null);
++    } else {
++      setError(errorMessage(apiError));
++    }
++  }, [month]);
++
++  useEffect(() => {
++    const timer = setTimeout(load, 0);
++    return () => clearTimeout(timer);
++  }, [load]);
++
++  if (error) return <ErrorAlert message={error} />;
++  if (!data) return <p className="py-6 text-sm text-muted">Cargando indicadores…</p>;
++
++  const q = data.quotes;
++  const label = monthName.format(new Date(`${data.month}-01T00:00:00Z`));
++
++  return (
++    <div className="space-y-6">
++      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
++        <div>
++          <h2 className="font-semibold">Resumen del negocio</h2>
++          <p className="text-sm text-muted">Las cifras del mes corresponden a {label}.</p>
++        </div>
++        <label className="text-sm font-medium sm:w-48">
++          Mes
++          <input
++            type="month"
++            value={month}
++            max={todayInLima().slice(0, 7)}
++            onChange={(e) => e.target.value && setMonth(e.target.value)}
++            className={fieldClass}
++          />
++        </label>
++      </div>
++
++      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
++        <Kpi icon="file" label="Borradores" value={String(q.drafts)} hint="Cotizaciones por terminar" href="/cotizaciones" />
++        <Kpi icon="send" label="Esperando respuesta" value={String(q.sent_pending)} hint="Enviadas y vigentes" href="/cotizaciones" tone="primary" />
++        <Kpi icon="plus" label="Cotizaciones del mes" value={String(q.created_in_month)} hint={`Creadas en ${label}`} />
++        <Kpi
++          icon="check"
++          label="Aceptado en el mes"
++          value={formatSoles(q.accepted_amount_cents)}
++          hint={`${q.accepted_in_month} ${q.accepted_in_month === 1 ? "cotización" : "cotizaciones"} de ${label}`}
++          tone="success"
++        />
++      </div>
++
++      <div className="grid gap-6 lg:grid-cols-2">
++        <section className="rounded-xl border border-line bg-surface p-5">
++          <h3 className="font-semibold">Próximas fechas</h3>
++          <p className="text-xs text-muted">Cotizaciones aceptadas con evento en los próximos 30 días.</p>
++          {q.upcoming.length === 0 ? (
++            <p className="mt-6 text-center text-sm text-muted">No hay eventos aceptados en los próximos 30 días.</p>
++          ) : (
++            <ul className="mt-4 divide-y divide-line">
++              {q.upcoming.map((quote) => (
++                <li key={quote.id}>
++                  <Link href={`/cotizaciones/${quote.id}`} className="flex items-center gap-4 py-3 hover:opacity-80">
++                    <span className="flex w-14 shrink-0 flex-col items-center rounded-lg bg-primary-soft py-1.5 text-primary">
++                      <span className="text-lg font-semibold leading-none">{quote.event_date.slice(8, 10)}</span>
++                      <span className="text-[11px] uppercase">{formatDate(quote.event_date).split(" ")[1]}</span>
++                    </span>
++                    <span className="min-w-0 flex-1">
++                      <span className="block truncate text-sm font-medium">{quote.client_name}</span>
++                      <span className="block text-xs text-muted">
++                        {EVENT_TYPE_LABELS[quote.event_type as keyof typeof EVENT_TYPE_LABELS]} · {quote.guests} invitados · {quote.code}
++                      </span>
++                    </span>
++                    <span className="text-sm font-medium tabular-nums">{formatSoles(quote.total_cents)}</span>
++                  </Link>
++                </li>
++              ))}
++            </ul>
++          )}
++          <p className="mt-4 rounded-lg bg-surface-muted p-2.5 text-xs text-muted">
++            El contrato y el adelanto de estos eventos todavía no se registran en el sistema (HU41).
++          </p>
++        </section>
++
++        <section className="rounded-xl border border-line bg-surface p-5">
++          <div className="flex items-center justify-between">
++            <h3 className="font-semibold">Últimas cotizaciones</h3>
++            <Link href="/cotizaciones" className="text-sm text-primary hover:underline">
++              Ver todas
++            </Link>
++          </div>
++          {q.recent.length === 0 ? (
++            <p className="mt-6 text-center text-sm text-muted">Todavía no hay cotizaciones.</p>
++          ) : (
++            <ul className="mt-4 divide-y divide-line">
++              {q.recent.map((quote) => (
++                <li key={quote.id}>
++                  <Link href={`/cotizaciones/${quote.id}`} className="flex items-center justify-between gap-3 py-3 hover:opacity-80">
++                    <span className="min-w-0">
++                      <span className="block text-sm font-medium text-primary">{quote.code}</span>
++                      <span className="block truncate text-xs text-muted">
++                        {quote.client_name} · {formatDate(quote.event_date)}
++                      </span>
++                    </span>
++                    <span className="flex shrink-0 flex-col items-end gap-1">
++                      <span className="text-sm font-medium tabular-nums">{formatSoles(quote.total_cents)}</span>
++                      <QuoteStatusBadge status={quote.status as QuoteStatus} />
++                    </span>
++                  </Link>
++                </li>
++              ))}
++            </ul>
++          )}
++        </section>
++      </div>
++
++      <p className="text-xs text-muted">
++        “Aceptado en el mes” cuenta las cotizaciones creadas en ese mes que hoy están aceptadas. Caja y stock se mostrarán
++        cuando estén listos esos módulos.
++      </p>
++    </div>
++  );
++}
++
++type KpiProps = {
++  icon: IconName;
++  label: string;
++  value: string;
++  hint: string;
++  href?: string;
++  tone?: "primary" | "success";
++};
++
++function Kpi({ icon, label, value, hint, href, tone }: KpiProps) {
++  const iconTone = tone === "success" ? "bg-success/10 text-success" : tone === "primary" ? "bg-primary-soft text-primary" : "bg-surface-muted text-muted";
++  const body = (
++    <>
++      <div className="flex items-center justify-between">
++        <p className="text-sm text-muted">{label}</p>
++        <span className={`rounded-lg p-2 ${iconTone}`}>
++          <Icon name={icon} className="size-4" />
++        </span>
++      </div>
++      <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
++      <p className="mt-1 text-xs text-muted">{hint}</p>
++    </>
++  );
++  const className = "block rounded-xl border border-line bg-surface p-5";
++  return href ? (
++    <Link href={href} className={`${className} transition hover:border-primary`}>
++      {body}
++    </Link>
++  ) : (
++    <div className={className}>{body}</div>
++  );
++}
+diff --git a/src/app/(app)/inicio/home-screen.tsx b/src/app/(app)/inicio/home-screen.tsx
+index 2f8f982..324ed8e 100644
+--- a/src/app/(app)/inicio/home-screen.tsx
++++ b/src/app/(app)/inicio/home-screen.tsx
+@@ -1,18 +1,22 @@
+ "use client";
+ 
+-// Pantalla de inicio después de iniciar sesión: saluda y muestra solo los módulos que el rol
+-// del usuario puede usar (HU01). Los indicadores del panel llegan con HU31.
++// Inicio después de iniciar sesión (HU01 y HU31).
++// - Administrador: panel de indicadores reales del negocio y accesos rápidos.
++// - Demás roles: accesos a sus módulos, como siempre.
+ import Link from "next/link";
+ 
+ import { ROLE_LABELS, useAuth } from "@/components/auth-provider";
+ import { SECTIONS } from "@/components/app-shell";
+ import { Icon } from "@/components/icons";
+ 
++import { AdminDashboard } from "./admin-dashboard";
++
+ export function HomeScreen() {
+   const { user, can } = useAuth();
+   const modules = SECTIONS.flatMap((section) => section.items).filter(
+     (item) => item.href !== "/inicio" && (!item.permission || can(item.permission)),
+   );
++  const showDashboard = can("dashboard:read");
+ 
+   return (
+     <div className="space-y-6">
+@@ -21,25 +25,32 @@ export function HomeScreen() {
+         <p className="mt-1 text-sm text-muted">{ROLE_LABELS[user.role]}</p>
+       </header>
+ 
++      {showDashboard && <AdminDashboard />}
++
+       {modules.length === 0 ? (
+         <p className="rounded-xl border border-line bg-surface p-6 text-sm text-muted">
+           Todavía no hay módulos disponibles para tu rol. Pronto aparecerán aquí.
+         </p>
+       ) : (
+-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+-          {modules.map((item) => (
+-            <Link
+-              key={item.href}
+-              href={item.href}
+-              className="flex items-center gap-4 rounded-xl border border-line bg-surface p-5 transition hover:border-primary hover:shadow-sm"
+-            >
+-              <span className="rounded-lg bg-primary-soft p-3 text-primary">
+-                <Icon name={item.icon} />
+-              </span>
+-              <span className="font-medium">{item.label}</span>
+-            </Link>
+-          ))}
+-        </div>
++        <section className="space-y-3">
++          {showDashboard && <h2 className="font-semibold">Accesos rápidos</h2>}
++          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
++            {modules.map((item) => (
++              <Link
++                key={item.href}
++                href={item.href}
++                className={`flex items-center gap-4 rounded-xl border border-line bg-surface transition hover:border-primary hover:shadow-sm ${
++                  showDashboard ? "p-4" : "p-5"
++                }`}
++              >
++                <span className="rounded-lg bg-primary-soft p-3 text-primary">
++                  <Icon name={item.icon} />
++                </span>
++                <span className="font-medium">{item.label}</span>
++              </Link>
++            ))}
++          </div>
++        </section>
+       )}
+     </div>
+   );
+diff --git a/src/lib/api/client.ts b/src/lib/api/client.ts
+index 6d37421..aa5c410 100644
+--- a/src/lib/api/client.ts
++++ b/src/lib/api/client.ts
+@@ -68,6 +68,8 @@ export type QuoteIn = components["schemas"]["QuoteIn"];
+ export type QuoteLineIn = components["schemas"]["QuoteLineIn"];
+ export type QuoteStatus = components["schemas"]["QuoteStatus"];
+ export type EventType = components["schemas"]["EventType"];
++export type Dashboard = components["schemas"]["DashboardOut"];
++export type DashboardQuote = components["schemas"]["DashboardQuoteOut"];
+ export type Me = components["schemas"]["MeOut"];
+ export type Permission = Me["permissions"][number];
+ export type Role = Me["role"];
+diff --git a/src/lib/api/schema.d.ts b/src/lib/api/schema.d.ts
+index 4c46030..4bbdf69 100644
+--- a/src/lib/api/schema.d.ts
++++ b/src/lib/api/schema.d.ts
+@@ -403,6 +403,26 @@ export interface paths {
+         patch?: never;
+         trace?: never;
+     };
++    "/v1/dashboard": {
++        parameters: {
++            query?: never;
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        /**
++         * Get Dashboard
++         * @description Indicadores reales del negocio. Caja y stock se agregan cuando existan sus módulos.
++         */
++        get: operations["dashboard_get"];
++        put?: never;
++        post?: never;
++        delete?: never;
++        options?: never;
++        head?: never;
++        patch?: never;
++        trace?: never;
++    };
+     "/v1/quotes": {
+         parameters: {
+             query?: never;
+@@ -656,6 +676,74 @@ export interface components {
+             /** Phone */
+             phone: string;
+         };
++        /** DashboardOut */
++        DashboardOut: {
++            /**
++             * Currency
++             * @default PEN
++             */
++            currency: string;
++            /**
++             * Month
++             * @description AAAA-MM
++             */
++            month: string;
++            quotes: components["schemas"]["DashboardQuotesOut"];
++        };
++        /** DashboardQuoteOut */
++        DashboardQuoteOut: {
++            /** Client Name */
++            client_name: string;
++            /** Code */
++            code: string;
++            /**
++             * Event Date
++             * Format: date
++             */
++            event_date: string;
++            /** Event Type */
++            event_type: string;
++            /** Guests */
++            guests: number;
++            /**
++             * Id
++             * Format: uuid
++             */
++            id: string;
++            /** Status */
++            status: string;
++            /** Total Cents */
++            total_cents: number;
++        };
++        /** DashboardQuotesOut */
++        DashboardQuotesOut: {
++            /** Accepted Amount Cents */
++            accepted_amount_cents: number;
++            /**
++             * Accepted In Month
++             * @description Creadas en el mes y hoy aceptadas
++             */
++            accepted_in_month: number;
++            /** Created In Month */
++            created_in_month: number;
++            /**
++             * Drafts
++             * @description En borrador y vigentes
++             */
++            drafts: number;
++            /** Recent */
++            recent: components["schemas"]["DashboardQuoteOut"][];
++            /**
++             * Sent Pending
++             * @description Enviadas, vigentes, esperando respuesta
++             */
++            sent_pending: number;
++            /**
++             * Upcoming
++             * @description Aceptadas con evento en los próximos 30 días
++             */
++            upcoming: components["schemas"]["DashboardQuoteOut"][];
++        };
+         /**
+          * DocumentType
+          * @enum {string}
+@@ -711,7 +799,7 @@ export interface components {
+          * Permission
+          * @enum {string}
+          */
+-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage";
++        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read";
+         /**
+          * PriceUnit
+          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
+@@ -2277,6 +2365,56 @@ export interface operations {
+             };
+         };
+     };
++    dashboard_get: {
++        parameters: {
++            query?: {
++                /** @description AAAA-MM; por defecto, el actual */
++                month?: string | null;
++            };
++            header?: never;
++            path?: never;
++            cookie?: never;
++        };
++        requestBody?: never;
++        responses: {
++            /** @description Successful Response */
++            200: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["DashboardOut"];
++                };
++            };
++            /** @description `auth.not_authenticated`, `auth.session_expired` */
++            401: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["Problem"];
++                };
++            };
++            /** @description `auth.forbidden` */
++            403: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["Problem"];
++                };
++            };
++            /** @description Validation Error */
++            422: {
++                headers: {
++                    [name: string]: unknown;
++                };
++                content: {
++                    "application/json": components["schemas"]["HTTPValidationError"];
++                };
++            };
++        };
++    };
+     quotes_search: {
+         parameters: {
+             query?: {

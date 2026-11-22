@@ -403,6 +403,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Quotes
+         * @description Busca por código, cliente, estado (incluida la vencida) y fecha del evento (CA-08.5).
+         */
+        get: operations["quotes_search"];
+        put?: never;
+        /**
+         * Create Quote
+         * @description Crea la cotización en borrador, con su código y su total calculado (HU07).
+         */
+        post: operations["quotes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/quotes/{quote_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Quote
+         * @description La cotización completa, con sus líneas.
+         */
+        get: operations["quotes_get"];
+        /**
+         * Update Quote
+         * @description Modifica una cotización en borrador (CA-08.1). Los precios ya congelados se mantienen.
+         */
+        put: operations["quotes_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/quotes/{quote_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change Quote Status
+         * @description Enviada, aceptada, rechazada o de vuelta a borrador (R-COT-3).
+         */
+        post: operations["quotes_change_status"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/users": {
         parameters: {
             query?: never;
@@ -593,11 +661,27 @@ export interface components {
          * @enum {string}
          */
         DocumentType: "DNI" | "RUC";
+        /**
+         * EventType
+         * @description Lista fija de tipos de evento (DOMAIN.md §4, regla 13).
+         * @enum {string}
+         */
+        EventType: "WEDDING" | "BIRTHDAY" | "QUINCEANERA" | "CORPORATE" | "GRADUATION" | "OTHER";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /**
+         * LineKind
+         * @enum {string}
+         */
+        LineKind: "SERVICE" | "EXTRA";
+        /**
+         * LineUnit
+         * @enum {string}
+         */
+        LineUnit: "PER_PERSON" | "PER_UNIT";
         /** LoginIn */
         LoginIn: {
             /** Email */
@@ -627,7 +711,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage";
         /**
          * PriceUnit
          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
@@ -652,6 +736,202 @@ export interface components {
              * @default about:blank
              */
             type: string;
+        };
+        /** QuoteIn */
+        QuoteIn: {
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /**
+             * End Time
+             * Format: time
+             * @description Si es menor que start_time, el evento termina al día siguiente
+             */
+            end_time: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /** Lines */
+            lines: components["schemas"]["QuoteLineIn"][];
+            /** Notes */
+            notes?: string | null;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            /**
+             * Valid Until
+             * @description Si se omite: 15 días al crear; se mantiene al modificar
+             */
+            valid_until?: string | null;
+            /** Venue */
+            venue: string;
+        };
+        /** QuoteLineIn */
+        QuoteLineIn: {
+            /**
+             * Description
+             * @description Solo en EXTRA
+             */
+            description?: string | null;
+            /** @description SERVICE (del catálogo) o EXTRA (concepto adicional) */
+            kind: components["schemas"]["LineKind"];
+            /**
+             * Quantity
+             * @description Si se omite: invitados (por persona) o 1 (por unidad)
+             */
+            quantity?: number | null;
+            /**
+             * Service Id
+             * @description Solo en SERVICE
+             */
+            service_id?: string | null;
+            /**
+             * Unit Price Cents
+             * @description Precio acordado. Si se omite en SERVICE: el del catálogo
+             */
+            unit_price_cents?: number | null;
+        };
+        /** QuoteLineOut */
+        QuoteLineOut: {
+            /** Catalog Price Cents */
+            catalog_price_cents: number | null;
+            /** Description */
+            description: string;
+            kind: components["schemas"]["LineKind"];
+            /** Quantity */
+            quantity: number;
+            /** Service Id */
+            service_id: string | null;
+            /** Subtotal Cents */
+            subtotal_cents: number;
+            unit: components["schemas"]["LineUnit"];
+            /** Unit Price Cents */
+            unit_price_cents: number;
+        };
+        /** QuoteOut */
+        QuoteOut: {
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Ends Next Day */
+            ends_next_day: boolean;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Lines */
+            lines: components["schemas"]["QuoteLineOut"][];
+            /** Notes */
+            notes: string | null;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            /** @description Estado efectivo: incluye EXPIRED si venció */
+            status: components["schemas"]["QuoteStatus"];
+            /** Total Cents */
+            total_cents: number;
+            /**
+             * Valid Until
+             * Format: date
+             */
+            valid_until: string;
+            /** Venue */
+            venue: string;
+        };
+        /** QuotePageOut */
+        QuotePageOut: {
+            /** Items */
+            items: components["schemas"]["QuoteSummaryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * QuoteStatus
+         * @enum {string}
+         */
+        QuoteStatus: "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "EXPIRED";
+        /** QuoteStatusIn */
+        QuoteStatusIn: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED";
+        };
+        /** QuoteSummaryOut */
+        QuoteSummaryOut: {
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["QuoteStatus"];
+            /** Total Cents */
+            total_cents: number;
+            /**
+             * Valid Until
+             * Format: date
+             */
+            valid_until: string;
         };
         /** RefreshIn */
         RefreshIn: {
@@ -1979,6 +2259,331 @@ export interface operations {
             };
             /** @description `client.not_found` */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    quotes_search: {
+        parameters: {
+            query?: {
+                /** @description Parte del código o del nombre del cliente */
+                text?: string;
+                client_id?: string | null;
+                status?: components["schemas"]["QuoteStatus"] | null;
+                event_date_from?: string | null;
+                event_date_to?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuotePageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    quotes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `quote.client_not_found`, `quote.service_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `quote.client_inactive`, `quote.service_inactive` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Dato inválido: `quote.event_date_past`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    quotes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `quote.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    quotes_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `quote.not_found` y los de `quotes_create` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `quote.not_editable` y los de `quotes_create` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Dato inválido: `quote.event_date_past`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    quotes_change_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                quote_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuoteStatusIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QuoteOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `quote.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `quote.invalid_transition`, `quote.expired` */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

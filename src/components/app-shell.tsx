@@ -25,6 +25,7 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     title: "Gestión comercial",
     items: [
       { href: "/clientes", label: "Clientes", icon: "users", permission: "clients:manage" },
+      { href: "/cotizaciones", label: "Cotizaciones", icon: "file", permission: "quotes:manage" },
       { href: "/catalogo", label: "Catálogo", icon: "catalog", permission: "catalog:read" },
     ],
   },
