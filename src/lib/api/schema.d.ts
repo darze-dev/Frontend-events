@@ -403,6 +403,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Dashboard
+         * @description Indicadores reales del negocio. Caja y stock se agregan cuando existan sus módulos.
+         */
+        get: operations["dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/quotes": {
         parameters: {
             query?: never;
@@ -656,6 +676,74 @@ export interface components {
             /** Phone */
             phone: string;
         };
+        /** DashboardOut */
+        DashboardOut: {
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Month
+             * @description AAAA-MM
+             */
+            month: string;
+            quotes: components["schemas"]["DashboardQuotesOut"];
+        };
+        /** DashboardQuoteOut */
+        DashboardQuoteOut: {
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /** Event Type */
+            event_type: string;
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Status */
+            status: string;
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** DashboardQuotesOut */
+        DashboardQuotesOut: {
+            /** Accepted Amount Cents */
+            accepted_amount_cents: number;
+            /**
+             * Accepted In Month
+             * @description Creadas en el mes y hoy aceptadas
+             */
+            accepted_in_month: number;
+            /** Created In Month */
+            created_in_month: number;
+            /**
+             * Drafts
+             * @description En borrador y vigentes
+             */
+            drafts: number;
+            /** Recent */
+            recent: components["schemas"]["DashboardQuoteOut"][];
+            /**
+             * Sent Pending
+             * @description Enviadas, vigentes, esperando respuesta
+             */
+            sent_pending: number;
+            /**
+             * Upcoming
+             * @description Aceptadas con evento en los próximos 30 días
+             */
+            upcoming: components["schemas"]["DashboardQuoteOut"][];
+        };
         /**
          * DocumentType
          * @enum {string}
@@ -711,7 +799,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read";
         /**
          * PriceUnit
          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
@@ -2259,6 +2347,56 @@ export interface operations {
             };
             /** @description `client.not_found` */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_get: {
+        parameters: {
+            query?: {
+                /** @description AAAA-MM; por defecto, el actual */
+                month?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
