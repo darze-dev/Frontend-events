@@ -45,6 +45,10 @@ export function ContractDetail() {
     return () => clearTimeout(timer);
   }, [load]);
 
+  // Next guarda esta pantalla oculta al salir de ella: el aviso es de esa visita y no debe
+  // reaparecer al volver (por ejemplo, "Firma registrada" después de convertir en evento).
+  useEffect(() => () => setNotice(null), []);
+
   if (!contract) {
     return error ? <ErrorAlert message={error} /> : <p className="py-10 text-center text-sm text-muted">Cargando…</p>;
   }

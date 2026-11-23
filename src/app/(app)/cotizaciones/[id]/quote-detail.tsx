@@ -58,6 +58,9 @@ export function QuoteDetail() {
     return () => clearTimeout(timer);
   }, [load]);
 
+  // Next guarda esta pantalla oculta al salir de ella: el aviso no debe reaparecer al volver.
+  useEffect(() => () => setNotice(null), []);
+
   async function changeStatus(status: Target) {
     setConfirming(null);
     setError(null);
