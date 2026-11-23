@@ -1,7 +1,8 @@
 "use client";
 
-// Detalle del evento (HU10), de solo lectura: datos copiados del contrato, servicios
-// contratados, responsable y enlaces al contrato y la cotización. La planificación llega con HU11.
+// Detalle del evento (HU10): datos copiados del contrato, servicios contratados, responsable y
+// enlaces al contrato y la cotización. "Cancelar evento" anula también el contrato (HU11, R-EVT-4).
+// Editar la planificación llega con el resto de HU11.
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -9,12 +10,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
+import { secondaryButton } from "@/components/ui/styles";
 import { api, type Event } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import { formatSchedule } from "@/lib/events";
+import { formatSoles } from "@/lib/money";
 import { EVENT_TYPE_LABELS, formatDate } from "@/lib/quotes";
 
 import { EventStatusBadge } from "../event-status-badge";
+import { CancelEventForm } from "./cancel-event-form";
 
 export function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -22,6 +26,8 @@ export function EventDetail() {
   const { can } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(justCreated ? "Evento creado: quedó programado." : null);
+  const [cancelling, setCancelling] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/events/{event_id}", {
@@ -36,9 +42,18 @@ export function EventDetail() {
     return () => clearTimeout(timer);
   }, [load]);
 
+  // Next guarda esta pantalla oculta al salir de ella: el aviso no debe reaparecer al volver.
+  useEffect(() => () => setNotice(null), []);
+
   if (!event) {
     return error ? <ErrorAlert message={error} /> : <p className="py-10 text-center text-sm text-muted">Cargando…</p>;
   }
+
+  // R-EVT-5: solo programado o confirmado; quien cancela también registra la devolución.
+  const cancellable =
+    (event.status === "SCHEDULED" || event.status === "CONFIRMED") &&
+    can("events:manage") &&
+    can("payments:record");
 
   const facts: [string, string][] = [
     ["Cliente", event.client_name],
@@ -66,20 +81,28 @@ export function EventDetail() {
           <Icon name="chevronLeft" className="size-4" />
           Eventos
         </Link>
-        <div>
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-semibold">{event.code}</h1>
-            <EventStatusBadge status={event.status} />
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-semibold">{event.code}</h1>
+              <EventStatusBadge status={event.status} />
+            </div>
+            <p className="mt-1 text-sm text-muted">
+              Del contrato {reference(event.contract_code, `/contratos/${event.contract_id}`, can("contracts:manage"))} · cotización{" "}
+              {reference(event.quote_code, `/cotizaciones/${event.quote_id}`, can("quotes:manage"))}
+            </p>
           </div>
-          <p className="mt-1 text-sm text-muted">
-            Del contrato {reference(event.contract_code, `/contratos/${event.contract_id}`, can("contracts:manage"))} · cotización{" "}
-            {reference(event.quote_code, `/cotizaciones/${event.quote_id}`, can("quotes:manage"))}
-          </p>
+          {cancellable && (
+            <button type="button" onClick={() => setCancelling(true)} className={`${secondaryButton} hover:text-danger`}>
+              <Icon name="close" className="size-4" />
+              Cancelar evento
+            </button>
+          )}
         </div>
-        {justCreated && (
+        {notice && (
           <div role="status" className="flex items-center gap-2 rounded-lg bg-success/10 p-3 text-sm text-success">
             <Icon name="check" className="size-4 shrink-0" />
-            Evento creado: quedó programado.
+            {notice}
           </div>
         )}
       </header>
@@ -122,8 +145,31 @@ export function EventDetail() {
             <h2 className="mb-2 font-semibold">Responsable de coordinación</h2>
             <p>{event.coordinator_name ?? "Usuario desactivado"}</p>
           </section>
+          {event.cancellation && (
+            <section className="rounded-xl border border-danger/30 bg-danger/5 p-5 text-sm">
+              <h2 className="mb-2 font-semibold text-danger">Cancelado</h2>
+              <p>{event.cancellation.reason}</p>
+              {event.cancellation.refund_cents != null && (
+                <p className="mt-1 text-muted">Devolución: {formatSoles(event.cancellation.refund_cents)}</p>
+              )}
+              {event.cancellation.note && <p className="mt-1 text-muted">{event.cancellation.note}</p>}
+              <p className="mt-2 text-xs text-muted">El contrato {event.contract_code} quedó anulado.</p>
+            </section>
+          )}
         </aside>
       </div>
+
+      {cancelling && (
+        <CancelEventForm
+          event={event}
+          onClose={() => setCancelling(false)}
+          onSaved={(updated) => {
+            setEvent(updated);
+            setCancelling(false);
+            setNotice("Evento cancelado y contrato anulado.");
+          }}
+        />
+      )}
     </div>
   );
 }
