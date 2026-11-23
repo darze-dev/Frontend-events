@@ -1,26 +1,64 @@
 @import "tailwindcss";
 
+/* Modo oscuro por botón: se activa con data-theme="dark" en <html> (ver layout.tsx). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Colores de Darze (prototipo aprobado en Figma Make) como variables.
+ * Las pantallas usan nombres por función (app, surface, line, muted…), no colores sueltos:
+ * así el modo oscuro solo cambia estas variables y ninguna pantalla se toca.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --app: #f8fafc;
+  --surface: #ffffff;
+  --surface-muted: #f1f5f9;
+  --line: #e2e8f0;
+  --fg: #0f172a;
+  --muted: #64748b;
+  --sidebar: #0f172a;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #dbeafe;
+  --violet: #7c3aed;
+  --cyan: #06b6d4;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+[data-theme="dark"] {
+  --app: #0b1120;
+  --surface: #111827;
+  --surface-muted: #1e293b;
+  --line: #1f2937;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --sidebar: #020617;
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --primary-soft: #172554;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --color-app: var(--app);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-sidebar: var(--sidebar);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-violet: var(--violet);
+  --color-cyan: var(--cyan);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--app);
+  color: var(--fg);
 }
