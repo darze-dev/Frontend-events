@@ -565,6 +565,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/events/{event_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Event
+         * @description Cancela el evento y anula su contrato; si hubo devolución, la registra (R-EVT-4).
+         */
+        post: operations["events_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/quotes": {
         parameters: {
             query?: never;
@@ -1082,6 +1102,37 @@ export interface components {
          * @enum {string}
          */
         DocumentType: "DNI" | "RUC";
+        /** EventCancelIn */
+        EventCancelIn: {
+            /** Note */
+            note?: string | null;
+            /** Reason */
+            reason: string;
+            /** @description Cómo se devolvió */
+            refund?: components["schemas"]["PaymentIn"] | null;
+            /**
+             * Refund Cents
+             * @description Solo si se devolvió dinero
+             */
+            refund_cents?: number | null;
+        };
+        /** EventCancellationOut */
+        EventCancellationOut: {
+            /**
+             * Cancelled At
+             * Format: date-time
+             */
+            cancelled_at: string;
+            /** Note */
+            note: string | null;
+            /** Reason */
+            reason: string;
+            /**
+             * Refund Cents
+             * @description Devolución registrada en el contrato
+             */
+            refund_cents: number | null;
+        };
         /** EventConvertIn */
         EventConvertIn: {
             /**
@@ -1097,6 +1148,7 @@ export interface components {
         };
         /** EventOut */
         EventOut: {
+            cancellation: components["schemas"]["EventCancellationOut"] | null;
             /**
              * Client Id
              * Format: uuid
@@ -3506,6 +3558,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventCancelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_cancellable` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.reason_required`, `contract.refund_invalid`, `payment.*` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };

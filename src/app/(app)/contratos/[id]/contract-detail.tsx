@@ -126,9 +126,13 @@ export function ContractDetail() {
             Firmado y con adelanto pagado: está listo para convertirse en evento.
           </p>
         )}
-        {contract.event_id && (
+        {contract.event_id && contract.status !== "CANCELLED" && (
           <p className="rounded-lg bg-surface-muted p-3 text-sm text-muted">
-            Este contrato ya es un evento. Para anularlo, hay que cancelar el evento.
+            Este contrato ya es un evento. Para anularlo,{" "}
+            <Link href={`/eventos/${contract.event_id}`} className="text-primary hover:underline">
+              cancela el evento
+            </Link>
+            : se anulan los dos en un solo paso.
           </p>
         )}
       </header>
