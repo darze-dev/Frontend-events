@@ -56,6 +56,7 @@ api.use(withSession);
 export type Client = components["schemas"]["ClientOut"];
 export type ClientCreate = components["schemas"]["ClientCreate"];
 export type ClientContactUpdate = components["schemas"]["ClientContactUpdate"];
+export type ClientHistory = components["schemas"]["ClientHistoryOut"];
 export type Category = components["schemas"]["CategoryOut"];
 export type Service = components["schemas"]["ServiceOut"];
 export type PriceUnit = components["schemas"]["PriceUnit"];

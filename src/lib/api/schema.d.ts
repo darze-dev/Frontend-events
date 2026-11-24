@@ -403,6 +403,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/clients/{client_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Client History
+         * @description Cotizaciones y eventos del cliente, con un resumen de su relación con Darze (HU05).
+         */
+        get: operations["clients_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/contracts": {
         parameters: {
             query?: never;
@@ -871,6 +891,21 @@ export interface components {
             /** Phone */
             phone: string;
         };
+        /** ClientHistoryOut */
+        ClientHistoryOut: {
+            client: components["schemas"]["ClientOut"];
+            /**
+             * Events
+             * @description De la fecha de evento más reciente
+             */
+            events: components["schemas"]["HistoryEventOut"][];
+            /**
+             * Quotes
+             * @description De la fecha de evento más reciente
+             */
+            quotes: components["schemas"]["QuoteSummaryOut"][];
+            summary: components["schemas"]["HistorySummaryOut"];
+        };
         /** ClientOut */
         ClientOut: {
             /** Active */
@@ -1321,6 +1356,42 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HistoryEventOut */
+        HistoryEventOut: {
+            /** Code */
+            code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            status: components["schemas"]["EventStatus"];
+            /**
+             * Total Cents
+             * @description Total del contrato del evento
+             */
+            total_cents: number;
+        };
+        /** HistorySummaryOut */
+        HistorySummaryOut: {
+            /** Accepted Quotes */
+            accepted_quotes: number;
+            /**
+             * Contracted Cents
+             * @description Suma de contratos firmados; sin los anulados
+             */
+            contracted_cents: number;
+            /** Events */
+            events: number;
+            /** Quotes */
+            quotes: number;
         };
         /**
          * LineKind
@@ -2950,6 +3021,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ClientOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `client.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    clients_history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                client_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientHistoryOut"];
                 };
             };
             /** @description `auth.not_authenticated`, `auth.session_expired` */
