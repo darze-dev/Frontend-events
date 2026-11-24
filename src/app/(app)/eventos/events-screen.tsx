@@ -62,11 +62,17 @@ export function EventsScreen() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">Eventos</h1>
-        <p className="mt-1 text-sm text-muted">
-          Servicios programados. Un evento nace de un contrato firmado y con adelanto pagado.
-        </p>
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Eventos</h1>
+          <p className="mt-1 text-sm text-muted">
+            Servicios programados. Un evento nace de un contrato firmado y con adelanto pagado.
+          </p>
+        </div>
+        <Link href="/eventos/calendario" className={secondaryButton}>
+          <Icon name="calendar" className="size-4" />
+          Ver calendario
+        </Link>
       </header>
 
       <div className="grid gap-3 rounded-xl border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">

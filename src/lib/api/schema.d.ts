@@ -528,6 +528,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/events/calendar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Events Calendar
+         * @description HU12: todos los eventos del periodo visible del calendario, por fecha y hora.
+         */
+        get: operations["events_calendar"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/events/coordinators": {
         parameters: {
             query?: never;
@@ -3348,6 +3368,7 @@ export interface operations {
                 /** @description Parte del código o del nombre del cliente */
                 text?: string;
                 status?: components["schemas"]["EventStatus"] | null;
+                event_type?: components["schemas"]["EventType"] | null;
                 date_from?: string | null;
                 date_to?: string | null;
                 page?: number;
@@ -3456,6 +3477,61 @@ export interface operations {
                 };
             };
             /** @description `event.coordinator_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_calendar: {
+        parameters: {
+            query: {
+                date_from: string;
+                /** @description Hasta 92 días desde date_from */
+                date_to: string;
+                /** @description Parte del código o del nombre del cliente */
+                text?: string;
+                status?: components["schemas"]["EventStatus"] | null;
+                event_type?: components["schemas"]["EventType"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventSummaryOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.range_invalid` */
             422: {
                 headers: {
                     [name: string]: unknown;
