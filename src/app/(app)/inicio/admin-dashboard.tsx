@@ -106,7 +106,11 @@ export function AdminDashboard() {
             </ul>
           )}
           <p className="mt-4 rounded-lg bg-surface-muted p-2.5 text-xs text-muted">
-            El contrato y el adelanto de estos eventos todavía no se registran en el sistema (HU41).
+            Son cotizaciones aceptadas, con o sin contrato firmado. Los eventos ya confirmados están en el{" "}
+            <Link href="/eventos/calendario" className="font-medium text-primary hover:underline">
+              calendario
+            </Link>
+            .
           </p>
         </section>
 
