@@ -2,6 +2,8 @@
 
 // Pantalla de clientes (HU04): buscar, registrar, editar contacto, desactivar y reactivar.
 // Computadora y tablet: tabla. Celular: tarjetas. El formulario se abre en una ventana.
+// El nombre abre el perfil del cliente con su historial (HU05).
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { Icon } from "@/components/icons";
@@ -120,7 +122,11 @@ export function ClientsScreen() {
               <tbody className="divide-y divide-line">
                 {clients.map((client) => (
                   <tr key={client.id} className="hover:bg-surface-muted/50">
-                    <td className="px-4 py-3 font-medium">{client.name}</td>
+                    <td className="px-4 py-3 font-medium">
+                      <Link href={`/clientes/${client.id}`} className="text-primary hover:underline">
+                        {client.name}
+                      </Link>
+                    </td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted">
                       {client.document_type} {client.document_number}
                     </td>
@@ -144,7 +150,9 @@ export function ClientsScreen() {
               <li key={client.id} className="rounded-xl border border-line bg-surface p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium">{client.name}</p>
+                    <Link href={`/clientes/${client.id}`} className="font-medium text-primary hover:underline">
+                      {client.name}
+                    </Link>
                     <p className="text-sm text-muted">
                       {client.document_type} {client.document_number}
                     </p>
