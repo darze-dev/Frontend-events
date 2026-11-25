@@ -38,6 +38,7 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     title: "Finanzas",
     items: [
       { href: "/caja", label: "Caja", icon: "wallet", permission: "payments:record" },
+      { href: "/flujo-de-caja", label: "Flujo de caja", icon: "chart", permission: "finance:read" },
     ],
   },
   {
