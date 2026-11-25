@@ -32,7 +32,10 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
   },
   {
     title: "Operaciones",
-    items: [{ href: "/eventos", label: "Eventos", icon: "calendar", permission: "events:read" }],
+    items: [
+      { href: "/eventos", label: "Eventos", icon: "calendar", permission: "events:read" },
+      { href: "/almacen", label: "Almacén", icon: "box", permission: "inventory:read" },
+    ],
   },
   {
     title: "Finanzas",
