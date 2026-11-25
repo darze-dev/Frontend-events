@@ -120,3 +120,7 @@ export type Purchase = components["schemas"]["PurchaseOut"];
 export type PurchaseLine = components["schemas"]["PurchaseLineOut"];
 export type PurchaseStatus = components["schemas"]["PurchaseStatus"];
 export type Shortage = components["schemas"]["ShortageOut"];
+// Ficha consolidada del evento (HU14): una sola respuesta por bloques.
+export type EventSheet = components["schemas"]["EventSheetOut"];
+export type SheetStaff = components["schemas"]["SheetStaffOut"];
+export type SheetActivity = components["schemas"]["SheetActivityOut"];

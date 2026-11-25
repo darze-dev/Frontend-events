@@ -1530,6 +1530,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/reports/events/{event_id}/sheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event Sheet
+         * @description Evento, cliente, servicios, personal, materiales, pagos y seguimiento en una petición.
+         *
+         *     Se arma en el momento con lo que cada módulo sabe (CA-14.7). `account` va vacío sin
+         *     `payments:record` (CA-14.5); `staff`, vacío mientras no haya información de personal.
+         */
+        get: operations["reports_event_sheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/staff": {
         parameters: {
             query?: never;
@@ -2820,6 +2843,26 @@ export interface components {
             service_id: string | null;
             unit: components["schemas"]["LineUnit"];
         };
+        /** EventSheetOut */
+        EventSheetOut: {
+            /** @description Vacío sin el permiso `payments:record` */
+            account: components["schemas"]["SheetAccountOut"] | null;
+            client: components["schemas"]["SheetClientOut"];
+            event: components["schemas"]["SheetEventOut"];
+            follow_up: components["schemas"]["SheetFollowUpOut"];
+            /**
+             * Materials
+             * @description Por producto, ordenado por nombre
+             */
+            materials: components["schemas"]["SheetMaterialOut"][];
+            /** Services */
+            services: components["schemas"]["SheetServiceOut"][];
+            /**
+             * Staff
+             * @description Vacío (`null`): sin información de personal (CA-14.3)
+             */
+            staff: components["schemas"]["SheetStaffOut"][] | null;
+        };
         /**
          * EventStatus
          * @description DOMAIN.md §3: programado → confirmado → en ejecución → finalizado · cancelado.
@@ -3723,6 +3766,287 @@ export interface components {
             price_unit: components["schemas"]["PriceUnit"];
             /** Reference Price Cents */
             reference_price_cents: number;
+        };
+        /**
+         * SheetAccountOut
+         * @description CA-14.5: total, pagado, saldo, fecha límite y pagos del contrato.
+         */
+        SheetAccountOut: {
+            /**
+             * Balance Cents
+             * @description Saldo por cobrar (RN15)
+             */
+            balance_cents: number;
+            /**
+             * Balance Due Date
+             * Format: date
+             */
+            balance_due_date: string;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            contract_status: components["schemas"]["ContractStatus"];
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Overdue */
+            overdue: boolean;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes (adelanto incluido)
+             */
+            paid_cents: number;
+            /** Payments */
+            payments: components["schemas"]["SheetPaymentOut"][];
+            /** Refunded Cents */
+            refunded_cents: number;
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** SheetActivityOut */
+        SheetActivityOut: {
+            /** Completed At */
+            completed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Responsible Id
+             * Format: uuid
+             */
+            responsible_id: string;
+            /**
+             * Responsible Name
+             * @description Vacío si el usuario no existe
+             */
+            responsible_name: string;
+            status: components["schemas"]["ActivityStatus"];
+        };
+        /** SheetClientOut */
+        SheetClientOut: {
+            /** Document Number */
+            document_number: string;
+            /** Document Type */
+            document_type: string;
+            /** Email */
+            email: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string;
+        };
+        /** SheetEventOut */
+        SheetEventOut: {
+            /** Code */
+            code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Coordinator Id
+             * Format: uuid
+             */
+            coordinator_id: string;
+            /**
+             * Coordinator Name
+             * @description Vacío si el usuario no existe
+             */
+            coordinator_name: string | null;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Ends Next Day */
+            ends_next_day: boolean;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["EventStatus"];
+            /** Venue */
+            venue: string;
+        };
+        /**
+         * SheetFollowUpOut
+         * @description CA-14.6: actividades pendientes y completadas, y las últimas observaciones.
+         */
+        SheetFollowUpOut: {
+            /**
+             * Done
+             * @description Por orden de creación
+             */
+            done: components["schemas"]["SheetActivityOut"][];
+            /**
+             * Pending
+             * @description Por orden de creación
+             */
+            pending: components["schemas"]["SheetActivityOut"][];
+            /**
+             * Recent Notes
+             * @description De la más reciente a la más antigua
+             */
+            recent_notes: components["schemas"]["SheetNoteOut"][];
+        };
+        /** SheetMaterialOut */
+        SheetMaterialOut: {
+            /** Code */
+            code: string;
+            kind: components["schemas"]["ProductKind"];
+            /** Name */
+            name: string;
+            /**
+             * Out
+             * @description Salió para el evento (3 decimales)
+             */
+            out: string;
+            /**
+             * Pending Return
+             * @description Reutilizable que falta devolver
+             */
+            pending_return: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Returned
+             * @description Volvió al almacén
+             */
+            returned: string;
+            unit: components["schemas"]["Unit"];
+            /**
+             * Wasted
+             * @description Se perdió o se dañó en el evento
+             */
+            wasted: string;
+        };
+        /** SheetNoteOut */
+        SheetNoteOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created By Name
+             * @description Vacío si el usuario no existe
+             */
+            created_by_name: string;
+            /** Edited At */
+            edited_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Text */
+            text: string;
+        };
+        /** SheetPaymentOut */
+        SheetPaymentOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            method: components["schemas"]["PaymentMethod"];
+            /** Number */
+            number: string;
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /**
+             * Voided
+             * @description Anulado: no cuenta en el saldo
+             */
+            voided: boolean;
+        };
+        /**
+         * SheetServiceOut
+         * @description Servicio contratado, sin precios (CA-14.2).
+         */
+        SheetServiceOut: {
+            /** Description */
+            description: string;
+            kind: components["schemas"]["LineKind"];
+            /** Quantity */
+            quantity: number;
+            /** Service Id */
+            service_id: string | null;
+            unit: components["schemas"]["LineUnit"];
+        };
+        /** SheetStaffOut */
+        SheetStaffOut: {
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @description Función en el evento
+             */
+            role: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
         };
         /** ShortageOut */
         ShortageOut: {
@@ -9605,6 +9929,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EventResultOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_event_sheet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventSheetOut"];
                 };
             };
             /** @description `auth.not_authenticated`, `auth.session_expired` */
