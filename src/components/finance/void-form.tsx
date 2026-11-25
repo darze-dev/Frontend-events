@@ -15,16 +15,20 @@ type Props = {
   // Devuelve el mensaje de error, o null si se anuló.
   onSubmit: (reason: string) => Promise<string | null>;
   onClose: () => void;
+  hint?: string; // aclaración bajo el motivo; por defecto, la de anular pagos y movimientos
 };
 
-export function VoidForm({ title, summary, confirmLabel, onSubmit, onClose }: Props) {
+const VOID_HINT =
+  "Anular no borra el registro: queda con el motivo, la fecha y quién lo anuló, y deja de contar en los totales.";
+
+export function VoidForm({ title, summary, confirmLabel, onSubmit, onClose, hint = VOID_HINT }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const reason = String(new FormData(event.currentTarget).get("reason") ?? "").trim();
-    if (!reason) return setError("Indica el motivo de la anulación.");
+    if (!reason) return setError("Indica el motivo.");
     setSaving(true);
     setError(null);
     const message = await onSubmit(reason);
@@ -40,9 +44,7 @@ export function VoidForm({ title, summary, confirmLabel, onSubmit, onClose }: Pr
           Motivo <span className="text-danger">*</span>
           <textarea name="reason" required rows={3} maxLength={500} autoFocus className={fieldClass} />
         </label>
-        <p className="text-xs text-muted">
-          Anular no borra el registro: queda con el motivo, la fecha y quién lo anuló, y deja de contar en los totales.
-        </p>
+        <p className="text-xs text-muted">{hint}</p>
         {error && <ErrorAlert message={error} />}
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button type="button" onClick={onClose} className={secondaryButton}>
