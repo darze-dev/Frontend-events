@@ -124,3 +124,11 @@ export type Shortage = components["schemas"]["ShortageOut"];
 export type EventSheet = components["schemas"]["EventSheetOut"];
 export type SheetStaff = components["schemas"]["SheetStaffOut"];
 export type SheetActivity = components["schemas"]["SheetActivityOut"];
+// Personal (HU15): trabajadores con baja lógica. Tarifas en céntimos de sol.
+export type Worker = components["schemas"]["WorkerOut"];
+export type WorkerSummary = components["schemas"]["WorkerSummaryOut"];
+export type WorkerCreate = components["schemas"]["WorkerCreate"];
+export type WorkerFunction = components["schemas"]["WorkerFunction"];
+export type WorkerType = components["schemas"]["WorkerType"];
+export type WorkerDocumentType = components["schemas"]["WorkerDocumentType"];
+export type WorkerStatus = components["schemas"]["WorkerStatus"];
