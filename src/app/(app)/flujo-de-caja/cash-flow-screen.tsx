@@ -3,7 +3,7 @@
 // Flujo de caja (HU22, solo administrador): entre dos fechas, ingresos (pagos de clientes netos
 // de devoluciones + otros ingresos), egresos por categoría y saldo del periodo (CA-22.1), con
 // desglose por mes (CA-22.2). Cuenta por la fecha del movimiento; lo anulado no entra (CA-22.4).
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 
 import { ErrorAlert } from "@/components/ui/alert";
 import { fieldClass, labelClass, secondaryButton } from "@/components/ui/styles";
@@ -43,6 +43,8 @@ export function CashFlowScreen() {
   const [flow, setFlow] = useState<CashFlow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const byCategoryId = useId();
+  const byMonthId = useId();
 
   const rangeError =
     !dateFrom || !dateTo
@@ -131,15 +133,15 @@ export function CashFlowScreen() {
             />
           </section>
 
-          <section aria-labelledby="by-category" className="rounded-xl border border-line bg-surface p-5">
-            <h2 id="by-category" className="mb-3 font-semibold">
+          <section aria-labelledby={byCategoryId} className="rounded-xl border border-line bg-surface p-5">
+            <h2 id={byCategoryId} className="mb-3 font-semibold">
               Por categoría
             </h2>
             <SummaryTable summary={flow.totals} />
           </section>
 
-          <section aria-labelledby="by-month" className="rounded-xl border border-line bg-surface p-5">
-            <h2 id="by-month" className="mb-3 font-semibold">
+          <section aria-labelledby={byMonthId} className="rounded-xl border border-line bg-surface p-5">
+            <h2 id={byMonthId} className="mb-3 font-semibold">
               Por mes
             </h2>
             {flow.months.length === 0 ? (
@@ -163,7 +165,7 @@ export function CashFlowScreen() {
                   <tbody className="divide-y divide-line tabular-nums">
                     {flow.months.map((month) => (
                       <tr key={month.month}>
-                        <th scope="row" className="px-5 py-2.5 text-left font-medium capitalize">
+                        <th scope="row" className="px-5 py-2.5 text-left font-medium">
                           {formatMonth(month.month)}
                         </th>
                         <td className="px-2 py-2.5 text-right text-success">{formatSoles(month.income_cents)}</td>

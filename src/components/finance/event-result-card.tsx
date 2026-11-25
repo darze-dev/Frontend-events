@@ -5,7 +5,7 @@
 // contratado y el saldo por cobrar. Nada anulado entra en el cálculo (CA-22.4).
 // Solo con `finance:read` (administrador): quien la usa decide si renderizarla.
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 
 import { ErrorAlert } from "@/components/ui/alert";
 import { api, type EventResult } from "@/lib/api/client";
@@ -16,6 +16,7 @@ import { formatSoles } from "@/lib/money";
 export function EventResultCard({ eventId }: { eventId: string }) {
   const [result, setResult] = useState<EventResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const titleId = useId();
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/reports/events/{event_id}/result", {
@@ -31,8 +32,8 @@ export function EventResultCard({ eventId }: { eventId: string }) {
   }, [load]);
 
   return (
-    <section aria-labelledby="result-title" className="rounded-xl border border-line bg-surface p-5">
-      <h2 id="result-title" className="mb-4 font-semibold">
+    <section aria-labelledby={titleId} className="rounded-xl border border-line bg-surface p-5">
+      <h2 id={titleId} className="mb-4 font-semibold">
         Resultado económico
       </h2>
       {!result ? (
