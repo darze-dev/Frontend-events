@@ -127,6 +127,22 @@ const MESSAGES: Record<string, string> = {
   "purchasing.purchase_not_found": "No se encontró la compra.",
   "purchasing.invalid_transition":
     "La compra ya cambió de estado: una compra recibida o cancelada no se modifica. Recarga la página.",
+  "staff.document_duplicated": "Ya existe un trabajador, activo o desactivado, con ese documento.",
+  "staff.document_invalid":
+    "El documento no es válido: el DNI tiene 8 dígitos y el carné de extranjería, de 9 a 12.",
+  "staff.name_required": "El nombre del trabajador es obligatorio.",
+  "staff.name_too_long": "El nombre no puede superar 150 caracteres.",
+  "staff.phone_invalid": "El teléfono solo admite dígitos.",
+  "staff.function_description_required": "Con la función «Otro», describe la función real.",
+  "staff.function_description_too_long": "La descripción de la función no puede superar 120 caracteres.",
+  "staff.function_description_not_allowed": "Solo la función «Otro» lleva descripción.",
+  "staff.rate_invalid": "La tarifa debe ser un monto en soles de cero o más.",
+  "staff.overtime_rate_required": "Si aplica hora extra, indica el monto por hora extra.",
+  "staff.overtime_rate_invalid": "El monto por hora extra debe ser mayor que cero.",
+  "staff.overtime_rate_not_allowed": "Si no aplica hora extra, no corresponde un monto.",
+  "staff.audit_reason_not_allowed": "Esta operación no admite motivo.",
+  "staff.audit_invalid": "No se pudo registrar la auditoría del cambio.",
+  "staff.not_found": "No se encontró el trabajador.",
   "report.range_invalid": "El rango de fechas no es válido: la fecha final no puede ser anterior a la inicial y el rango no supera 366 días.",
   "auth.invalid_credentials": "Correo o contraseña incorrectos, o la cuenta está desactivada.",
   "auth.forbidden": "Tu rol no tiene permiso para esta operación.",
@@ -141,6 +157,8 @@ const DETAIL_FIRST = new Set([
   "inventory.return_exceeds",
   "inventory.waste_exceeds",
   "purchasing.validation",
+  // CA-15.3: el detalle identifica el documento repetido ("… con DNI 12345678.").
+  "staff.document_duplicated",
 ]);
 
 // RN20: el backend informa el disponible en `detail` ("… solo hay 3.000 disponible.").
