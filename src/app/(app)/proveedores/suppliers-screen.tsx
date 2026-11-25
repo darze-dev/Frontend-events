@@ -1,4 +1,4 @@
-"use supplier";
+"use client";
 
 // Proveedores (HU27): buscar por nombre o documento sin distinguir tildes (CA-27.2), registrar,
 // editar, desactivar y reactivar (CA-27.3: no se elimina). Computadora y tablet: tabla.
