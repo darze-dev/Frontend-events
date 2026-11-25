@@ -1,7 +1,7 @@
 "use client";
 
 // Seguimiento del evento (HU13): lista de actividades (pendiente / completada) y bitácora de
-// observaciones. R-ACT-2: actividades en programado, confirmado o en curso; observaciones también
+// observaciones. R-ACT-2: actividades en programado, confirmado o en ejecución; observaciones también
 // con el evento finalizado; cancelado = solo lectura. R-ACT-6: edita su autor o un administrador.
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 

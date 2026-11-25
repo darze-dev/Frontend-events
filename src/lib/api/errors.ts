@@ -65,7 +65,7 @@ const MESSAGES: Record<string, string> = {
   "contract.already_cancelled": "El contrato ya está anulado.",
   "event.not_found": "No se encontró el evento.",
   "event.activities_closed":
-    "Las actividades solo se registran o marcan con el evento programado, confirmado o en curso.",
+    "Las actividades solo se registran o marcan con el evento programado, confirmado o en ejecución.",
   "event.not_editable":
     "La planificación solo se edita con el evento programado o confirmado.",
   "event.invalid_transition":
@@ -116,7 +116,7 @@ const MESSAGES: Record<string, string> = {
   "inventory.product_not_found": "No se encontró el producto.",
   "inventory.product_inactive": "El producto está desactivado: actívalo para registrar entradas o salidas.",
   "inventory.event_not_found": "No se encontró el evento.",
-  "inventory.event_not_assignable": "Solo salen materiales para un evento programado, confirmado o en curso.",
+  "inventory.event_not_assignable": "Solo salen materiales para un evento programado, confirmado o en ejecución.",
   "inventory.insufficient_stock": "No hay stock suficiente para esa cantidad.",
   "inventory.return_exceeds": "No se puede devolver más de lo que salió para el evento y aún no volvió.",
   "inventory.waste_exceeds": "La merma del evento no puede superar lo que salió y no volvió.",

@@ -17,7 +17,7 @@ import { formatDate } from "@/lib/quotes";
 
 type Recording = { kind: "EXIT" | "RETURN"; product: MovementProduct | null };
 
-// Solo salen materiales para un evento programado, confirmado o en curso (CA-26.1).
+// Solo salen materiales para un evento programado, confirmado o en ejecución (CA-26.1).
 const OPEN_STATUSES: Event["status"][] = ["SCHEDULED", "CONFIRMED", "IN_PROGRESS"];
 
 export function EventMaterials({ event }: { event: Event }) {
