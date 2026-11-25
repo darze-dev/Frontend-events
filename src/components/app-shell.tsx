@@ -35,6 +35,13 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     items: [{ href: "/eventos", label: "Eventos", icon: "calendar", permission: "events:read" }],
   },
   {
+    title: "Finanzas",
+    items: [
+      { href: "/caja", label: "Caja", icon: "wallet", permission: "payments:record" },
+      { href: "/flujo-de-caja", label: "Flujo de caja", icon: "chart", permission: "finance:read" },
+    ],
+  },
+  {
     title: "Administración",
     items: [
       { href: "/usuarios", label: "Usuarios", icon: "shield", permission: "users:manage" },

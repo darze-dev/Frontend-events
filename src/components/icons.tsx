@@ -165,6 +165,18 @@ const paths = {
       <path d="M21 12H9" />
     </>
   ),
+  wallet: (
+    <>
+      <path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3" />
+      <path d="M3 7h16a2 2 0 0 1 2 2v3h-5a2 2 0 0 0 0 4h5" />
+    </>
+  ),
+  chart: (
+    <>
+      <path d="M3 3v18h18" />
+      <path d="m7 15 4-4 3 3 5-6" />
+    </>
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof paths;

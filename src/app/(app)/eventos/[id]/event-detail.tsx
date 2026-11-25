@@ -3,12 +3,15 @@
 // Detalle del evento (HU10): datos copiados del contrato, servicios contratados, responsable y
 // enlaces al contrato y la cotización. "Cancelar evento" anula también el contrato (HU11, R-EVT-4).
 // Editar la planificación llega con el resto de HU11. La pestaña "Seguimiento" tiene actividades
-// y bitácora de observaciones (HU13).
+// y bitácora de observaciones (HU13). En "Resumen", con `payments:record`, la tarjeta "Cuenta"
+// del contrato del evento (HU19); con `finance:read`, el "Resultado económico" (HU22).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
 
 import { useAuth } from "@/components/auth-provider";
+import { AccountCard } from "@/components/finance/account-card";
+import { EventResultCard } from "@/components/finance/event-result-card";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
 import { secondaryButton } from "@/components/ui/styles";
@@ -37,6 +40,7 @@ export function EventDetail() {
   const [notice, setNotice] = useState<string | null>(justCreated ? "Evento creado: quedó programado." : null);
   const [cancelling, setCancelling] = useState(false);
   const [tab, setTab] = useState<Tab>("resumen");
+  const [moneyVersion, setMoneyVersion] = useState(0); // cambia al pagar o anular: refresca el resultado
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/events/{event_id}", {
@@ -189,6 +193,18 @@ export function EventDetail() {
             </ul>
             <p className="mt-3 text-xs text-muted">Copiados del contrato al crear el evento.</p>
           </section>
+
+          {can("payments:record") && (
+            <AccountCard
+              key={`${event.contract_id}-${event.status}`}
+              contractId={event.contract_id}
+              onChanged={() => {
+                setMoneyVersion((n) => n + 1);
+                void load();
+              }}
+            />
+          )}
+          {can("finance:read") && <EventResultCard key={`${event.status}-${moneyVersion}`} eventId={event.id} />}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

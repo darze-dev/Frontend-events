@@ -524,6 +524,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/contracts/{contract_id}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Contract Account
+         * @description Total, pagado, saldo, fecha límite y pagos con quién los registró (HU19, CA-19.4).
+         */
+        get: operations["contracts_account_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/contracts/{contract_id}/cancel": {
         parameters: {
             query?: never;
@@ -538,6 +558,26 @@ export interface paths {
          * @description Anula con motivo; si hubo devolución, se registra su monto (R-CON-3).
          */
         post: operations["contracts_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contracts/{contract_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Contract Payment
+         * @description Registra un pago parcial de un contrato firmado, sin superar el saldo (HU19, RN14).
+         */
+        post: operations["contracts_payments_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -655,7 +695,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Event */
+        /**
+         * Get Event
+         * @description El evento; pagado y saldo solo para quien registra pagos (compras no ve dinero).
+         */
         get: operations["events_get"];
         put?: never;
         post?: never;
@@ -733,6 +776,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Movements
+         * @description Movimientos de la fecha más reciente a la más antigua, con filtros (CA-21.4).
+         */
+        get: operations["movements_list"];
+        put?: never;
+        /**
+         * Create Movement
+         * @description Registra un ingreso o egreso; un egreso puede asociarse a un evento (CA-21.1, CA-21.2).
+         */
+        post: operations["movements_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/movements/{movement_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void Movement
+         * @description Anula con motivo; queda el movimiento y su anulación, no se edita (CA-21.3, RN17).
+         */
+        post: operations["movements_void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/notes/{note_id}": {
         parameters: {
             query?: never;
@@ -748,6 +835,46 @@ export interface paths {
          */
         put: operations["notes_update"];
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/{payment_id}/receipt.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Payment Receipt
+         * @description Comprobante interno del pago en PDF (HU20). Si está anulado, sale con la marca.
+         */
+        get: operations["payments_receipt_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/{payment_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void Payment
+         * @description Anula un pago parcial con motivo; queda el pago y su anulación (CA-19.5, RN17).
+         */
+        post: operations["payments_void"];
         delete?: never;
         options?: never;
         head?: never;
@@ -836,6 +963,46 @@ export interface paths {
          * @description Enviada, aceptada, rechazada o de vuelta a borrador (R-COT-3).
          */
         post: operations["quotes_change_status"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/cash-flow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cash Flow
+         * @description Ingresos, egresos por categoría y saldo del periodo, por mes; sin anulados (CA-22.1).
+         */
+        get: operations["reports_cash_flow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/events/{event_id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event Result
+         * @description Cobrado al cliente, egresos del evento por categoría y resultado (CA-22.3).
+         */
+        get: operations["reports_event_result"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -964,6 +1131,56 @@ export interface components {
          * @enum {string}
          */
         AccessResult: "SUCCESS" | "INVALID_CREDENTIALS" | "INACTIVE_USER";
+        /** AccountPaymentOut */
+        AccountPaymentOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Number
+             * @description PAG-AAAA-NNNN (CA-20.1)
+             */
+            number: string;
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Recorded By
+             * Format: uuid
+             */
+            recorded_by: string;
+            /**
+             * Recorded By Name
+             * @description Vacío si el usuario no existe
+             */
+            recorded_by_name: string;
+            /** Reference */
+            reference: string | null;
+            void: components["schemas"]["PaymentVoidOut"] | null;
+            /**
+             * Voidable
+             * @description Solo un pago parcial vigente se anula (CA-19.5)
+             */
+            voidable: boolean;
+            /**
+             * Voided
+             * @description Anulado: no cuenta en el saldo (CA-19.3)
+             */
+            voided: boolean;
+        };
         /** ActivityIn */
         ActivityIn: {
             /**
@@ -1054,6 +1271,79 @@ export interface components {
             /** Refund Cents */
             refund_cents: number | null;
         };
+        /** CashFlowMonthOut */
+        CashFlowMonthOut: {
+            /**
+             * Client Payments Cents
+             * @description Pagos de clientes netos de devoluciones
+             */
+            client_payments_cents: number;
+            /** Expense Cents */
+            expense_cents: number;
+            expenses: components["schemas"]["ExpensesOut"];
+            /** Income Cents */
+            income_cents: number;
+            /**
+             * Month
+             * @description AAAA-MM
+             */
+            month: string;
+            /**
+             * Net Cents
+             * @description Saldo del periodo: ingresos − egresos
+             */
+            net_cents: number;
+            /** Other Income Cents */
+            other_income_cents: number;
+            /** Refunds Cents */
+            refunds_cents: number;
+        };
+        /** CashFlowOut */
+        CashFlowOut: {
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /**
+             * Months
+             * @description Solo los meses con movimiento
+             */
+            months: components["schemas"]["CashFlowMonthOut"][];
+            totals: components["schemas"]["CashSummaryOut"];
+        };
+        /** CashSummaryOut */
+        CashSummaryOut: {
+            /**
+             * Client Payments Cents
+             * @description Pagos de clientes netos de devoluciones
+             */
+            client_payments_cents: number;
+            /** Expense Cents */
+            expense_cents: number;
+            expenses: components["schemas"]["ExpensesOut"];
+            /** Income Cents */
+            income_cents: number;
+            /**
+             * Net Cents
+             * @description Saldo del periodo: ingresos − egresos
+             */
+            net_cents: number;
+            /** Other Income Cents */
+            other_income_cents: number;
+            /** Refunds Cents */
+            refunds_cents: number;
+        };
         /** CategoryIn */
         CategoryIn: {
             /** Name */
@@ -1132,6 +1422,51 @@ export interface components {
             /** Phone */
             phone: string;
         };
+        /**
+         * ContractAccountOut
+         * @description CA-19.4: total, pagado, saldo, fecha límite y pagos con quién los registró.
+         */
+        ContractAccountOut: {
+            /**
+             * Balance Cents
+             * @description Total − pagos vigentes + devoluciones (RN15)
+             */
+            balance_cents: number;
+            /**
+             * Balance Due Date
+             * Format: date
+             */
+            balance_due_date: string;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Overdue
+             * @description Saldo vencido: solo un aviso (R-PAG-2)
+             */
+            overdue: boolean;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes (adelanto incluido)
+             */
+            paid_cents: number;
+            /** Payments */
+            payments: components["schemas"]["AccountPaymentOut"][];
+            /** Refunded Cents */
+            refunded_cents: number;
+            status: components["schemas"]["ContractStatus"];
+            /** Total Cents */
+            total_cents: number;
+        };
         /** ContractCancelIn */
         ContractCancelIn: {
             /** Note */
@@ -1163,8 +1498,11 @@ export interface components {
         ContractOut: {
             /** Advance Cents */
             advance_cents: number;
-            /** Balance Cents */
-            balance_cents: number;
+            /**
+             * Balance Cents
+             * @description Pendiente de firma: total − adelanto; firmado: total − pagos vigentes + devoluciones (RN15). Vacío sin `payments:record`
+             */
+            balance_cents: number | null;
             /**
              * Balance Due Date
              * Format: date
@@ -1210,6 +1548,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes. Vacío sin `payments:record`
+             */
+            paid_cents: number | null;
             /** Payments */
             payments: components["schemas"]["PaymentOut"][];
             /** Quote Code */
@@ -1234,6 +1577,31 @@ export interface components {
             page_size: number;
             /** Total */
             total: number;
+        };
+        /** ContractPaymentCreatedOut */
+        ContractPaymentCreatedOut: {
+            account: components["schemas"]["ContractAccountOut"];
+            payment: components["schemas"]["AccountPaymentOut"];
+        };
+        /** ContractPaymentIn */
+        ContractPaymentIn: {
+            /**
+             * Amount Cents
+             * @description Mayor que cero y sin superar el saldo (RN14)
+             */
+            amount_cents: number;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Paid On
+             * Format: date
+             * @description No puede ser futura (R-PAG-4)
+             */
+            paid_on: string;
+            /**
+             * Reference
+             * @description N.º de operación, voucher, etc.
+             */
+            reference?: string | null;
         };
         /** ContractSignIn */
         ContractSignIn: {
@@ -1408,6 +1776,11 @@ export interface components {
         };
         /** EventOut */
         EventOut: {
+            /**
+             * Balance Cents
+             * @description Saldo del contrato (RN15). Vacío sin `payments:record`
+             */
+            balance_cents: number | null;
             cancellation: components["schemas"]["EventCancellationOut"] | null;
             /**
              * Client Id
@@ -1460,6 +1833,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes del contrato (R-PAG-1). Vacío sin `payments:record`
+             */
+            paid_cents: number | null;
             /** Quote Code */
             quote_code: string;
             /**
@@ -1488,6 +1866,60 @@ export interface components {
             page_size: number;
             /** Total */
             total: number;
+        };
+        /** EventResultOut */
+        EventResultOut: {
+            /**
+             * Balance Cents
+             * @description Saldo por cobrar (RN15)
+             */
+            balance_cents: number;
+            /** Client Name */
+            client_name: string;
+            /**
+             * Collected Cents
+             * @description Cobrado al cliente, neto de devoluciones
+             */
+            collected_cents: number;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Event Code */
+            event_code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Status */
+            event_status: string;
+            /** Expense Cents */
+            expense_cents: number;
+            expenses: components["schemas"]["ExpensesOut"];
+            /**
+             * Result Cents
+             * @description Cobrado − egresos asociados al evento
+             */
+            result_cents: number;
+            /**
+             * Total Cents
+             * @description Total contratado
+             */
+            total_cents: number;
         };
         /** EventServiceOut */
         EventServiceOut: {
@@ -1557,6 +1989,17 @@ export interface components {
          * @enum {string}
          */
         EventType: "WEDDING" | "BIRTHDAY" | "QUINCEANERA" | "CORPORATE" | "GRADUATION" | "OTHER";
+        /** ExpensesOut */
+        ExpensesOut: {
+            /** Other Cents */
+            other_cents: number;
+            /** Staff Cents */
+            staff_cents: number;
+            /** Supplies Cents */
+            supplies_cents: number;
+            /** Transport Cents */
+            transport_cents: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1633,6 +2076,127 @@ export interface components {
             permissions: components["schemas"]["Permission"][];
             role: components["schemas"]["Role"];
         };
+        /**
+         * MovementCategory
+         * @enum {string}
+         */
+        MovementCategory: "SUPPLIES" | "STAFF" | "TRANSPORT" | "OTHER_EXPENSE" | "OTHER_INCOME";
+        /** MovementIn */
+        MovementIn: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** @description Egreso: SUPPLIES, STAFF, TRANSPORT u OTHER_EXPENSE. Ingreso: OTHER_INCOME */
+            category: components["schemas"]["MovementCategory"];
+            /** Concept */
+            concept: string;
+            /**
+             * Event Id
+             * @description Evento asociado, si lo hay (RN16)
+             */
+            event_id?: string | null;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Occurred On
+             * Format: date
+             * @description No puede ser futura (R-PAG-4)
+             */
+            occurred_on: string;
+            /** Reference */
+            reference?: string | null;
+            type: components["schemas"]["MovementType"];
+        };
+        /** MovementOut */
+        MovementOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            category: components["schemas"]["MovementCategory"];
+            /** Concept */
+            concept: string;
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Event Id */
+            event_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Occurred On
+             * Format: date
+             */
+            occurred_on: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Recorded By
+             * Format: uuid
+             */
+            recorded_by: string;
+            /**
+             * Recorded By Name
+             * @description Vacío si el usuario no existe
+             */
+            recorded_by_name: string;
+            /** Reference */
+            reference: string | null;
+            type: components["schemas"]["MovementType"];
+            /** @description Anulado: no entra en los cálculos */
+            void: components["schemas"]["MovementVoidOut"] | null;
+        };
+        /** MovementPageOut */
+        MovementPageOut: {
+            /** Items */
+            items: components["schemas"]["MovementOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * MovementState
+         * @enum {string}
+         */
+        MovementState: "ACTIVE" | "VOIDED";
+        /**
+         * MovementType
+         * @enum {string}
+         */
+        MovementType: "INCOME" | "EXPENSE";
+        /** MovementVoidIn */
+        MovementVoidIn: {
+            /**
+             * Reason
+             * @description Motivo obligatorio (RN17)
+             */
+            reason: string;
+        };
+        /** MovementVoidOut */
+        MovementVoidOut: {
+            /** Reason */
+            reason: string;
+            /**
+             * Voided At
+             * Format: date-time
+             */
+            voided_at: string;
+            /**
+             * Voided By
+             * Format: uuid
+             */
+            voided_by: string;
+            /** Voided By Name */
+            voided_by_name: string;
+        };
         /** NoteIn */
         NoteIn: {
             /**
@@ -1701,7 +2265,7 @@ export interface components {
          * PaymentKind
          * @enum {string}
          */
-        PaymentKind: "ADVANCE" | "REFUND";
+        PaymentKind: "ADVANCE" | "INSTALLMENT" | "REFUND";
         /**
          * PaymentMethod
          * @enum {string}
@@ -1719,18 +2283,45 @@ export interface components {
             kind: components["schemas"]["PaymentKind"];
             method: components["schemas"]["PaymentMethod"];
             /**
+             * Number
+             * @description PAG-AAAA-NNNN (CA-20.1)
+             */
+            number: string;
+            /**
              * Paid On
              * Format: date
              */
             paid_on: string;
             /** Reference */
             reference: string | null;
+            /**
+             * Voided
+             * @description Anulado: no cuenta en el saldo (CA-19.3)
+             */
+            voided: boolean;
+        };
+        /** PaymentVoidOut */
+        PaymentVoidOut: {
+            /** Reason */
+            reason: string;
+            /**
+             * Voided At
+             * Format: date-time
+             */
+            voided_at: string;
+            /**
+             * Voided By
+             * Format: uuid
+             */
+            voided_by: string;
+            /** Voided By Name */
+            voided_by_name: string;
         };
         /**
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "event_notes:write" | "event_notes:edit_any";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "finance:read" | "event_notes:write" | "event_notes:edit_any";
         /**
          * PriceUnit
          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
@@ -2104,6 +2695,14 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** VoidIn */
+        VoidIn: {
+            /**
+             * Reason
+             * @description Motivo obligatorio (RN17)
+             */
+            reason: string;
         };
     };
     responses: never;
@@ -3759,6 +4358,64 @@ export interface operations {
             };
         };
     };
+    contracts_account_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractAccountOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     contracts_cancel: {
         parameters: {
             query?: never;
@@ -3820,6 +4477,77 @@ export interface operations {
                 };
             };
             /** @description `contract.reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    contracts_payments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractPaymentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractPaymentCreatedOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_signed` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.exceeds_balance`, `payment.*` */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -4556,6 +5284,184 @@ export interface operations {
             };
         };
     };
+    movements_list: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                type?: components["schemas"]["MovementType"] | null;
+                category?: components["schemas"]["MovementCategory"] | null;
+                event_id?: string | null;
+                state?: components["schemas"]["MovementState"] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    movements_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovementIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.*` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    movements_void: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                movement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovementVoidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.already_voided` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.reason_required` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     notes_update: {
         parameters: {
             query?: never;
@@ -4617,6 +5523,135 @@ export interface operations {
                 };
             };
             /** @description `note.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    payments_receipt_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El comprobante */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    payments_void: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractAccountOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.not_voidable`, `payment.already_voided` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.reason_required` */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -5001,6 +6036,115 @@ export interface operations {
             };
             /** @description `quote.invalid_transition`, `quote.expired` */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_cash_flow: {
+        parameters: {
+            query: {
+                from: string;
+                /** @description Hasta 366 días */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashFlowOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_event_result: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventResultOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
