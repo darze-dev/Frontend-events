@@ -2,7 +2,7 @@
 
 // Registrar un pago del contrato (HU19): monto mayor que cero y hasta el saldo (RN14), fecha
 // no futura (R-PAG-4), medio y referencia opcional. El backend vuelve a validar todo.
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 
 import { ErrorAlert } from "@/components/ui/alert";
 import { Modal } from "@/components/ui/modal";
@@ -23,6 +23,7 @@ export function PaymentForm({ account, onClose, onSaved }: Props) {
   const today = todayInLima();
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const amountHintId = useId();
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,10 +67,10 @@ export function PaymentForm({ account, onClose, onSaved }: Props) {
               required
               autoFocus
               placeholder={centsToSolesText(account.balance_cents)}
-              aria-describedby="payment-amount-hint"
+              aria-describedby={amountHintId}
               className={fieldClass}
             />
-            <span id="payment-amount-hint" className="mt-1 block text-xs font-normal text-muted">
+            <span id={amountHintId} className="mt-1 block text-xs font-normal text-muted">
               Hasta {formatSoles(account.balance_cents)}
             </span>
           </label>

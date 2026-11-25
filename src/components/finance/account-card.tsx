@@ -4,7 +4,7 @@
 // pagado, saldo, fecha límite y aviso de saldo vencido (R-PAG-2), y la lista de pagos con su
 // comprobante. Solo se muestra con `payments:record` (quien la usa decide si renderizarla).
 // En un contrato anulado no hay saldo ni pagos nuevos (CA-19.6).
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
@@ -32,6 +32,7 @@ export function AccountCard({ contractId, onChanged }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const [voiding, setVoiding] = useState<AccountPayment | null>(null);
+  const titleId = useId();
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/contracts/{contract_id}/account", {
@@ -48,8 +49,8 @@ export function AccountCard({ contractId, onChanged }: Props) {
 
   if (!account) {
     return (
-      <section aria-labelledby="account-title" className="rounded-xl border border-line bg-surface p-5">
-        <h2 id="account-title" className="mb-3 font-semibold">
+      <section aria-labelledby={titleId} className="rounded-xl border border-line bg-surface p-5">
+        <h2 id={titleId} className="mb-3 font-semibold">
           Cuenta
         </h2>
         {error ? <ErrorAlert message={error} /> : <p className="text-sm text-muted">Cargando…</p>}
@@ -83,9 +84,9 @@ export function AccountCard({ contractId, onChanged }: Props) {
   }
 
   return (
-    <section aria-labelledby="account-title" className="rounded-xl border border-line bg-surface p-5">
+    <section aria-labelledby={titleId} className="rounded-xl border border-line bg-surface p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 id="account-title" className="font-semibold">
+        <h2 id={titleId} className="font-semibold">
           Cuenta
         </h2>
         {canPay && (

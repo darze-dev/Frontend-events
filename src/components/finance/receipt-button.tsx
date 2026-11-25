@@ -45,12 +45,12 @@ export function ReceiptButton({ payment, onError }: Props) {
       type="button"
       onClick={() => void download()}
       disabled={downloading}
-      aria-label={`Descargar comprobante ${payment.number}`}
-      title="Descargar comprobante en PDF"
+      aria-label={`Descargar comprobante ${payment.number}${payment.voided ? " (anulado)" : ""}`}
+      title={payment.voided ? "Descargar comprobante en PDF (pago anulado)" : "Descargar comprobante en PDF"}
       className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-primary hover:bg-primary-soft disabled:opacity-60"
     >
       <Icon name="download" className="size-4" />
-      {downloading ? "Generando…" : "Comprobante"}
+      {downloading ? "Generando…" : payment.voided ? "Comprobante (anulado)" : "Comprobante"}
     </button>
   );
 }
