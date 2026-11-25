@@ -2,10 +2,11 @@
 
 // Detalle del evento (HU10): datos copiados del contrato, servicios contratados, responsable y
 // enlaces al contrato y la cotización. "Cancelar evento" anula también el contrato (HU11, R-EVT-4).
-// Editar la planificación llega con el resto de HU11.
+// Editar la planificación llega con el resto de HU11. La pestaña "Seguimiento" tiene actividades
+// y bitácora de observaciones (HU13).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
 
 import { useAuth } from "@/components/auth-provider";
 import { Icon } from "@/components/icons";
@@ -19,6 +20,13 @@ import { EVENT_TYPE_LABELS, formatDate } from "@/lib/quotes";
 
 import { EventStatusBadge } from "../event-status-badge";
 import { CancelEventForm } from "./cancel-event-form";
+import { EventFollowUp } from "./event-follow-up";
+
+const TABS = [
+  { id: "resumen", label: "Resumen" },
+  { id: "seguimiento", label: "Seguimiento" },
+] as const;
+type Tab = (typeof TABS)[number]["id"];
 
 export function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +36,7 @@ export function EventDetail() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(justCreated ? "Evento creado: quedó programado." : null);
   const [cancelling, setCancelling] = useState(false);
+  const [tab, setTab] = useState<Tab>("resumen");
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/events/{event_id}", {
@@ -44,6 +53,15 @@ export function EventDetail() {
 
   // Next guarda esta pantalla oculta al salir de ella: el aviso no debe reaparecer al volver.
   useEffect(() => () => setNotice(null), []);
+
+  // Pestañas accesibles: flechas izquierda/derecha mueven la selección y el foco.
+  function onTabKey(keyEvent: KeyboardEvent<HTMLButtonElement>) {
+    if (keyEvent.key !== "ArrowRight" && keyEvent.key !== "ArrowLeft") return;
+    const index = TABS.findIndex((t) => t.id === tab);
+    const next = TABS[(index + (keyEvent.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length].id;
+    setTab(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  }
 
   if (!event) {
     return error ? <ErrorAlert message={error} /> : <p className="py-10 text-center text-sm text-muted">Cargando…</p>;
@@ -107,7 +125,40 @@ export function EventDetail() {
         )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+      <div role="tablist" aria-label="Secciones del evento" className="flex gap-1 border-b border-line">
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={`tab-${t.id}`}
+            aria-selected={tab === t.id}
+            aria-controls={`panel-${t.id}`}
+            tabIndex={tab === t.id ? 0 : -1}
+            onClick={() => setTab(t.id)}
+            onKeyDown={onTabKey}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition ${
+              tab === t.id ? "border-primary text-primary" : "border-transparent text-muted hover:text-fg"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "seguimiento" && (
+        <div role="tabpanel" id="panel-seguimiento" aria-labelledby="tab-seguimiento">
+          <EventFollowUp event={event} />
+        </div>
+      )}
+
+      <div
+        role="tabpanel"
+        id="panel-resumen"
+        aria-labelledby="tab-resumen"
+        hidden={tab !== "resumen"}
+        className="grid gap-6 lg:grid-cols-[1fr_20rem]"
+      >
         <div className="space-y-6">
           <section className="rounded-xl border border-line bg-surface p-5">
             <h2 className="mb-4 font-semibold">Datos del evento</h2>

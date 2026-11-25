@@ -16,3 +16,14 @@ export function formatSchedule(event: Pick<EventSummary, "start_time" | "end_tim
   const nextDay = event.end_time < event.start_time ? " (día siguiente)" : "";
   return `${formatTime(event.start_time)} – ${formatTime(event.end_time)}${nextDay}`;
 }
+
+const limaDateTime = new Intl.DateTimeFormat("es-PE", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "America/Lima",
+});
+
+// Fecha y hora de un registro (UTC en la API) en hora de Lima: "25 nov 2026, 15:40".
+export function formatDateTimeLima(iso: string): string {
+  return limaDateTime.format(new Date(iso));
+}
