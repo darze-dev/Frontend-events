@@ -38,6 +38,13 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     ],
   },
   {
+    title: "Compras",
+    items: [
+      { href: "/compras", label: "Compras", icon: "cart", permission: "purchasing:manage" },
+      { href: "/proveedores", label: "Proveedores", icon: "truck", permission: "purchasing:manage" },
+    ],
+  },
+  {
     title: "Finanzas",
     items: [
       { href: "/caja", label: "Caja", icon: "wallet", permission: "payments:record" },
