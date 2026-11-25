@@ -64,7 +64,7 @@ export function ContractDetail() {
     ["Fecha del evento", formatDate(contract.event_date)],
     ["Total", formatSoles(contract.total_cents)],
     ["Adelanto pactado", formatSoles(contract.advance_cents)],
-    ["Saldo", formatSoles(contract.balance_cents)],
+    ["Saldo", contract.balance_cents == null ? "—" : formatSoles(contract.balance_cents)],
     ["Pagar el saldo hasta", formatDate(contract.balance_due_date)],
   ];
 

@@ -65,14 +65,37 @@ const MESSAGES: Record<string, string> = {
   "payment.amount_invalid": "El monto del pago debe ser mayor que cero.",
   "payment.date_in_future": "La fecha del pago no puede ser posterior a hoy.",
   "payment.reference_too_long": "La referencia no puede superar 100 caracteres.",
+  "payment.not_found": "No se encontró el pago.",
+  "payment.exceeds_balance": "El pago supera el saldo pendiente del contrato.",
+  "payment.not_voidable": "Solo se anulan pagos parciales. El adelanto se anula anulando el contrato.",
+  "payment.already_voided": "El pago ya está anulado.",
+  "payment.reason_required": "Para anular el pago, indica el motivo.",
+  "payment.reason_too_long": "El motivo no puede superar 500 caracteres.",
+  "contract.not_signed": "Solo se registran pagos en un contrato firmado.",
+  "movement.not_found": "No se encontró el movimiento.",
+  "movement.already_voided": "El movimiento ya está anulado.",
+  "movement.amount_invalid": "El monto debe ser mayor que cero.",
+  "movement.category_invalid": "La categoría no corresponde al tipo de movimiento.",
+  "movement.concept_required": "Indica el concepto.",
+  "movement.concept_too_long": "El concepto no puede superar 200 caracteres.",
+  "movement.date_in_future": "La fecha no puede ser posterior a hoy.",
+  "movement.reference_too_long": "La referencia no puede superar 100 caracteres.",
+  "movement.reason_required": "Para anular el movimiento, indica el motivo.",
+  "movement.reason_too_long": "El motivo no puede superar 500 caracteres.",
+  "event.not_found": "No se encontró el evento.",
+  "report.range_invalid": "El rango de fechas no es válido: la fecha final no puede ser anterior a la inicial y el rango no supera 366 días.",
   "auth.invalid_credentials": "Correo o contraseña incorrectos, o la cuenta está desactivada.",
   "auth.forbidden": "Tu rol no tiene permiso para esta operación.",
   "auth.session_expired": "Tu sesión terminó. Vuelve a iniciar sesión.",
 };
 
+// Códigos cuyo `detail` trae un dato útil (p. ej., el saldo pendiente): se muestra ese texto.
+const DETAIL_FIRST = new Set(["payment.exceeds_balance"]);
+
 export function errorMessage(error: unknown): string {
   if (typeof error === "object" && error !== null && "code" in error) {
     const { code, detail } = error as { code: string; detail?: string };
+    if (DETAIL_FIRST.has(code) && detail) return detail;
     return MESSAGES[code] ?? detail ?? "No se pudo completar la operación.";
   }
   return "No se pudo conectar con el servidor. ¿Está encendida la API?";
