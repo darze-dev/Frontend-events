@@ -178,7 +178,9 @@ export function StockMovementForm({ kind, product, event = null, lockEvent = fal
             )}
             {kind === "WASTE" && (
               <span className="mt-1 block text-xs font-normal text-muted">
-                Si se perdió en un evento, elígelo: descuenta de lo que salió y no del almacén.
+                {linkedEvent
+                  ? "La merma de un evento no baja el stock del almacén (ya salió con la salida); reduce lo que falta devolver."
+                  : "Si se perdió en un evento, elígelo: descuenta de lo que salió y no del almacén."}
               </span>
             )}
           </div>
