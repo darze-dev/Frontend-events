@@ -91,6 +91,12 @@ export type Event = components["schemas"]["EventOut"];
 export type EventSummary = components["schemas"]["EventSummaryOut"];
 export type EventStatus = components["schemas"]["EventStatus"];
 export type Coordinator = components["schemas"]["CoordinatorOut"];
+// Planificación y estados del evento (HU11).
+export type EventPlanningIn = components["schemas"]["EventPlanningIn"];
+export type EventPlanning = components["schemas"]["EventPlanningOut"];
+export type EventChange = components["schemas"]["EventChangeOut"];
+export type EventAction = components["schemas"]["EventAction"];
+export type FieldChange = components["schemas"]["FieldChangeOut"];
 export type Activity = components["schemas"]["ActivityOut"];
 export type Note = components["schemas"]["NoteOut"];
 export type Me = components["schemas"]["MeOut"];
