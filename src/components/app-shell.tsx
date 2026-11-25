@@ -35,6 +35,12 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     items: [{ href: "/eventos", label: "Eventos", icon: "calendar", permission: "events:read" }],
   },
   {
+    title: "Finanzas",
+    items: [
+      { href: "/caja", label: "Caja", icon: "wallet", permission: "payments:record" },
+    ],
+  },
+  {
     title: "Administración",
     items: [
       { href: "/usuarios", label: "Usuarios", icon: "shield", permission: "users:manage" },
