@@ -752,6 +752,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/events/{event_id}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Changes
+         * @description Historial de planificación y estado, del más antiguo al más reciente (CA-11.5).
+         */
+        get: operations["events_changes_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Event
+         * @description Programado → confirmado (CA-11.4).
+         */
+        post: operations["events_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finish Event
+         * @description En ejecución → finalizado; no exige saldo en cero (R-EVT-8).
+         */
+        post: operations["events_finish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/events/{event_id}/notes": {
         parameters: {
             query?: never;
@@ -770,6 +830,48 @@ export interface paths {
          * @description Agrega una observación (CA-13.4); también con el evento finalizado (R-ACT-2).
          */
         post: operations["events_notes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/planning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Planning
+         * @description Edita fecha, horario, lugar, invitados y responsable en un evento programado o
+         *     confirmado (CA-11.2, R-EVT-6). No cambia el contrato ni la cotización (R-EVT-7).
+         */
+        put: operations["events_planning_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Event
+         * @description Confirmado → en ejecución, solo el día del evento en Lima; si cruza la medianoche,
+         *     también el día siguiente (R-EVT-8, R-COT-1).
+         */
+        post: operations["events_start"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1428,6 +1530,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Workers
+         * @description Lista trabajadores por función y estado, con búsqueda por nombre o documento.
+         */
+        get: operations["staff_search"];
+        put?: never;
+        /**
+         * Register Worker
+         * @description Registra un trabajador nuevo, siempre activo. El documento no puede repetirse.
+         */
+        post: operations["staff_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/{worker_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Worker
+         * @description Ficha completa de un trabajador, activo o inactivo (la baja es lógica).
+         */
+        get: operations["staff_get"];
+        /**
+         * Update Worker
+         * @description Reemplazo completo de los datos editables: si un opcional se omite, se limpia.
+         */
+        put: operations["staff_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/{worker_id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activate Worker
+         * @description Reactiva a un trabajador dado de baja, con motivo opcional.
+         */
+        post: operations["staff_activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/{worker_id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate Worker
+         * @description Baja lógica con motivo opcional. Repetir la operación no audita otra vez.
+         */
+        post: operations["staff_deactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/users": {
         parameters: {
             query?: never;
@@ -1877,7 +2067,7 @@ export interface components {
         ContractAccountOut: {
             /**
              * Balance Cents
-             * @description Total − pagos vigentes + devoluciones (RN15)
+             * @description Total − pagos vigentes + devoluciones (RN15); 0 si el contrato está anulado
              */
             balance_cents: number;
             /**
@@ -2208,6 +2398,12 @@ export interface components {
              */
             unit_cost_cents: number;
         };
+        /**
+         * EventAction
+         * @description Qué cambió en el evento, para el historial (CA-11.5).
+         * @enum {string}
+         */
+        EventAction: "PLANNING_UPDATED" | "CONFIRMED" | "STARTED" | "FINISHED" | "CANCELLED";
         /** EventCancelIn */
         EventCancelIn: {
             /** Note */
@@ -2238,6 +2434,27 @@ export interface components {
              * @description Devolución registrada en el contrato
              */
             refund_cents: number | null;
+        };
+        /** EventChangeOut */
+        EventChangeOut: {
+            action: components["schemas"]["EventAction"];
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /**
+             * Changed By
+             * Format: uuid
+             */
+            changed_by: string;
+            /**
+             * Changed By Name
+             * @description Vacío si no se conoce el nombre
+             */
+            changed_by_name: string | null;
+            /** Fields */
+            fields: components["schemas"]["FieldChangeOut"][];
         };
         /** EventConvertIn */
         EventConvertIn: {
@@ -2412,6 +2629,132 @@ export interface components {
             /** Total */
             total: number;
         };
+        /**
+         * EventPlanningIn
+         * @description CA-11.2: todos obligatorios. Si la hora de fin es menor que la de inicio, el evento
+         *     termina al día siguiente (R-COT-1).
+         */
+        EventPlanningIn: {
+            /**
+             * Coordinator Id
+             * Format: uuid
+             * @description Administrador o encargado de eventos activo
+             */
+            coordinator_id: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /**
+             * Event Date
+             * Format: date
+             * @description Hoy o una fecha futura (en Lima)
+             */
+            event_date: string;
+            /**
+             * Guests
+             * @description Entre 1 y 10000. No recalcula el total (R-EVT-7)
+             */
+            guests: number;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            /**
+             * Venue
+             * @description Hasta 300 caracteres
+             */
+            venue: string;
+        };
+        /** EventPlanningOut */
+        EventPlanningOut: {
+            /**
+             * Balance Cents
+             * @description Saldo del contrato (RN15). Vacío sin `payments:record`
+             */
+            balance_cents: number | null;
+            cancellation: components["schemas"]["EventCancellationOut"] | null;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Coordinator Id
+             * Format: uuid
+             */
+            coordinator_id: string;
+            /**
+             * Coordinator Name
+             * @description Vacío si el usuario ya no está activo
+             */
+            coordinator_name: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Ends Next Day */
+            ends_next_day: boolean;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes del contrato (R-PAG-1). Vacío sin `payments:record`
+             */
+            paid_cents: number | null;
+            /** Quote Code */
+            quote_code: string;
+            /**
+             * Quote Id
+             * Format: uuid
+             */
+            quote_id: string;
+            /** Services */
+            services: components["schemas"]["EventServiceOut"][];
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["EventStatus"];
+            /** Venue */
+            venue: string;
+            /**
+             * Warnings
+             * @description `staff_may_need_review` si cambió la fecha o el horario (R-EVT-9)
+             */
+            warnings: components["schemas"]["PlanningWarning"][];
+        };
         /** EventResultOut */
         EventResultOut: {
             /**
@@ -2479,7 +2822,7 @@ export interface components {
         };
         /**
          * EventStatus
-         * @description DOMAIN.md §3. HU10 solo crea eventos programados; los demás estados llegan con HU11.
+         * @description DOMAIN.md §3: programado → confirmado → en ejecución → finalizado · cancelado.
          * @enum {string}
          */
         EventStatus: "SCHEDULED" | "CONFIRMED" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
@@ -2544,6 +2887,21 @@ export interface components {
             supplies_cents: number;
             /** Transport Cents */
             transport_cents: number;
+        };
+        /** FieldChangeOut */
+        FieldChangeOut: {
+            /** After */
+            after: string | number;
+            /**
+             * Before
+             * @description Fechas y horas en ISO; IDs como texto
+             */
+            before: string | number;
+            /**
+             * Field
+             * @description `event_date`, `start_time`, `end_time`, `venue`, `guests`, `coordinator_id` o `status`
+             */
+            field: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -2837,7 +3195,13 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage";
+        /**
+         * PlanningWarning
+         * @description R-EVT-9: cambió la fecha o el horario; el personal asignado puede tener otro horario.
+         * @enum {string}
+         */
+        PlanningWarning: "staff_may_need_review";
         /**
          * PriceUnit
          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
@@ -3567,6 +3931,205 @@ export interface components {
             quantity: string;
             /** Reason */
             reason: string;
+        };
+        /**
+         * WorkerCreate
+         * @description Cuerpo de `POST /v1/staff`: alta de un trabajador.
+         */
+        WorkerCreate: {
+            /**
+             * Document Number
+             * @description Número de documento; el dominio lo normaliza
+             */
+            document_number: string;
+            /** @description DNI o CE */
+            document_type: components["schemas"]["WorkerDocumentType"];
+            /** @description Función fija; OTHER exige descripción */
+            function?: components["schemas"]["WorkerFunction"] | null;
+            /**
+             * Function Description
+             * @description Solo con la función OTHER
+             */
+            function_description?: string | null;
+            /**
+             * Name
+             * @description Nombre completo del trabajador
+             */
+            name: string;
+            /**
+             * Overtime Applies
+             * @description Si corresponde pago de hora extra
+             * @default false
+             */
+            overtime_applies: boolean;
+            /**
+             * Overtime Rate Cents
+             * @description Monto por hora extra en céntimos; obligatorio si aplica
+             */
+            overtime_rate_cents?: number | null;
+            /**
+             * Phone
+             * @description Solo dígitos
+             */
+            phone?: string | null;
+            /**
+             * Rate Cents
+             * @description Tarifa referencial en céntimos: S/ 45.00 = 4500
+             */
+            rate_cents?: number | null;
+            /** @description FIXED o EVENTUAL */
+            worker_type?: components["schemas"]["WorkerType"] | null;
+        };
+        /**
+         * WorkerDocumentType
+         * @enum {string}
+         */
+        WorkerDocumentType: "DNI" | "CE";
+        /**
+         * WorkerFunction
+         * @description Función del trabajador: lista fija del sistema más `OTHER` con descripción.
+         * @enum {string}
+         */
+        WorkerFunction: "COOK" | "WAITER" | "BARTENDER" | "ASSISTANT" | "COORDINATOR" | "OTHER";
+        /**
+         * WorkerOut
+         * @description Ficha completa devuelta por la API, incluido el estado actual.
+         */
+        WorkerOut: {
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "PEN";
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["WorkerDocumentType"];
+            function: components["schemas"]["WorkerFunction"] | null;
+            /** Function Description */
+            function_description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Overtime Applies */
+            overtime_applies: boolean;
+            /** Overtime Rate Cents */
+            overtime_rate_cents: number | null;
+            /** Phone */
+            phone: string | null;
+            /** Rate Cents */
+            rate_cents: number | null;
+            status: components["schemas"]["WorkerStatus"];
+            worker_type: components["schemas"]["WorkerType"] | null;
+        };
+        /**
+         * WorkerPageOut
+         * @description Página del listado con el total que cumple el filtro.
+         */
+        WorkerPageOut: {
+            /** Items */
+            items: components["schemas"]["WorkerSummaryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * WorkerStatus
+         * @description Estado del trabajador: la baja es lógica, nunca borrado físico (R-STF-2).
+         * @enum {string}
+         */
+        WorkerStatus: "ACTIVE" | "INACTIVE";
+        /**
+         * WorkerStatusChange
+         * @description Cuerpo opcional de baja y reactivación: motivo libre, no obligatorio.
+         */
+        WorkerStatusChange: {
+            /**
+             * Reason
+             * @description Motivo de la baja o reactivación
+             */
+            reason?: string | null;
+        };
+        /**
+         * WorkerSummaryOut
+         * @description Fila del listado: incluye el documento, que comparte el permiso `staff:manage`.
+         */
+        WorkerSummaryOut: {
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["WorkerDocumentType"];
+            function: components["schemas"]["WorkerFunction"] | null;
+            /** Function Description */
+            function_description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            status: components["schemas"]["WorkerStatus"];
+            worker_type: components["schemas"]["WorkerType"] | null;
+        };
+        /**
+         * WorkerType
+         * @description Tipo de trabajador: `FIXED` o `EVENTUAL`; opcional, sin interno/externo (R-STF-11).
+         * @enum {string}
+         */
+        WorkerType: "FIXED" | "EVENTUAL";
+        /**
+         * WorkerUpdate
+         * @description Cuerpo de `PUT /v1/staff/{worker_id}`: reemplazo completo de los editables.
+         */
+        WorkerUpdate: {
+            /**
+             * Document Number
+             * @description Número de documento; el dominio lo normaliza
+             */
+            document_number: string;
+            /** @description DNI o CE */
+            document_type: components["schemas"]["WorkerDocumentType"];
+            /** @description Función fija; OTHER exige descripción */
+            function?: components["schemas"]["WorkerFunction"] | null;
+            /**
+             * Function Description
+             * @description Solo con la función OTHER
+             */
+            function_description?: string | null;
+            /**
+             * Name
+             * @description Nombre completo del trabajador
+             */
+            name: string;
+            /**
+             * Overtime Applies
+             * @description Si corresponde pago de hora extra
+             * @default false
+             */
+            overtime_applies: boolean;
+            /**
+             * Overtime Rate Cents
+             * @description Monto por hora extra en céntimos; obligatorio si aplica
+             */
+            overtime_rate_cents?: number | null;
+            /**
+             * Phone
+             * @description Solo dígitos
+             */
+            phone?: string | null;
+            /**
+             * Rate Cents
+             * @description Tarifa referencial en céntimos: S/ 45.00 = 4500
+             */
+            rate_cents?: number | null;
+            /** @description FIXED o EVENTUAL */
+            worker_type?: components["schemas"]["WorkerType"] | null;
         };
         /**
          * DocumentType
@@ -6152,6 +6715,198 @@ export interface operations {
             };
         };
     };
+    events_changes_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventChangeOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.invalid_transition` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_finish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.invalid_transition` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     events_notes_list: {
         parameters: {
             query?: never;
@@ -6277,6 +7032,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_planning_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventPlanningIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPlanningOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_editable` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.date_past`, `event.time_invalid`, `event.guests_invalid`, `event.venue_required`, `event.venue_too_long`, `event.coordinator_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.invalid_transition`, `event.not_event_day` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -8733,6 +9626,374 @@ export interface operations {
                 };
             };
             /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_search: {
+        parameters: {
+            query?: {
+                function?: components["schemas"]["WorkerFunction"] | null;
+                /** @description ACTIVE por defecto; ALL incluye ambos */
+                status?: "ACTIVE" | "INACTIVE" | "ALL";
+                /** @description Parte del nombre o del documento */
+                text?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkerCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.document_duplicated` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Dato inválido: `staff.name_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkerUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.document_duplicated` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Dato inválido: `staff.name_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_activate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkerStatusChange"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_deactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkerStatusChange"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
             404: {
                 headers: {
                     [name: string]: unknown;
