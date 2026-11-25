@@ -64,6 +64,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/activities/{activity_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Complete Activity
+         * @description Marca la actividad como completada (CA-13.3).
+         */
+        post: operations["activities_complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/activities/{activity_id}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reopen Activity
+         * @description Devuelve la actividad a pendiente (CA-13.3).
+         */
+        post: operations["activities_reopen"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/activities/{activity_id}/responsible": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Change Responsible
+         * @description Cambia el responsable de la actividad (R-ACT-4).
+         */
+        put: operations["activities_responsible_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/login": {
         parameters: {
             query?: never;
@@ -464,6 +524,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/contracts/{contract_id}/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Contract Account
+         * @description Total, pagado, saldo, fecha límite y pagos con quién los registró (HU19, CA-19.4).
+         */
+        get: operations["contracts_account_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/contracts/{contract_id}/cancel": {
         parameters: {
             query?: never;
@@ -478,6 +558,26 @@ export interface paths {
          * @description Anula con motivo; si hubo devolución, se registra su monto (R-CON-3).
          */
         post: operations["contracts_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/contracts/{contract_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Contract Payment
+         * @description Registra un pago parcial de un contrato firmado, sin superar el saldo (HU19, RN14).
+         */
+        post: operations["contracts_payments_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -595,10 +695,37 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Event */
+        /**
+         * Get Event
+         * @description El evento; pagado y saldo solo para quien registra pagos (compras no ve dinero).
+         */
         get: operations["events_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Activities
+         * @description Actividades del evento por orden de creación (CA-13.5).
+         */
+        get: operations["events_activities_list"];
+        put?: never;
+        /**
+         * Create Activity
+         * @description Registra una actividad o indicación pendiente (CA-13.1, R-ACT-4).
+         */
+        post: operations["events_activities_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -619,6 +746,656 @@ export interface paths {
          * @description Cancela el evento y anula su contrato; si hubo devolución, la registra (R-EVT-4).
          */
         post: operations["events_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Changes
+         * @description Historial de planificación y estado, del más antiguo al más reciente (CA-11.5).
+         */
+        get: operations["events_changes_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Event
+         * @description Programado → confirmado (CA-11.4).
+         */
+        post: operations["events_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Finish Event
+         * @description En ejecución → finalizado; no exige saldo en cero (R-EVT-8).
+         */
+        post: operations["events_finish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/notes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Notes
+         * @description Bitácora del evento, de la observación más reciente a la más antigua (CA-13.5).
+         */
+        get: operations["events_notes_list"];
+        put?: never;
+        /**
+         * Create Note
+         * @description Agrega una observación (CA-13.4); también con el evento finalizado (R-ACT-2).
+         */
+        post: operations["events_notes_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/planning": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Planning
+         * @description Edita fecha, horario, lugar, invitados y responsable en un evento programado o
+         *     confirmado (CA-11.2, R-EVT-6). No cambia el contrato ni la cotización (R-EVT-7).
+         */
+        put: operations["events_planning_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/events/{event_id}/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start Event
+         * @description Confirmado → en ejecución, solo el día del evento en Lima; si cruza la medianoche,
+         *     también el día siguiente (R-EVT-8, R-COT-1).
+         */
+        post: operations["events_start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/events/{event_id}/materials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event Materials
+         * @description CA-26.6: por producto, qué salió, qué volvió, qué se perdió y qué falta devolver.
+         */
+        get: operations["inventory_event_materials"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/movements/adjustment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Adjustment
+         * @description R-INV-5: corrige el stock con un ajuste positivo o negativo y su motivo.
+         */
+        post: operations["inventory_movements_adjustment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/movements/entry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Entry
+         * @description CA-23.2: entrada con costo unitario y, si se conocen, proveedor, lote y vencimiento.
+         */
+        post: operations["inventory_movements_entry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/movements/exit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Exit
+         * @description CA-26.1 y CA-26.2: salida a un evento programado, confirmado o en ejecución.
+         */
+        post: operations["inventory_movements_exit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/movements/return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Return
+         * @description CA-26.3: no supera lo que salió para el evento menos lo devuelto y lo perdido.
+         */
+        post: operations["inventory_movements_return"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/movements/waste": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Waste
+         * @description CA-26.4: merma con motivo, de almacén (baja el stock) o de un evento.
+         */
+        post: operations["inventory_movements_waste"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Products
+         * @description Productos con su stock y alertas (CA-23.5), ordenados por nombre.
+         */
+        get: operations["inventory_products_list"];
+        put?: never;
+        /**
+         * Create Product
+         * @description Registra un producto activo, sin stock: el stock entra con una entrada.
+         */
+        post: operations["inventory_products_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/products/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Product */
+        get: operations["inventory_products_get"];
+        /**
+         * Update Product
+         * @description Modifica los datos del producto. Su stock y sus movimientos no cambian.
+         */
+        put: operations["inventory_products_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/products/{product_id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate Product */
+        post: operations["inventory_products_activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/products/{product_id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate Product
+         * @description CA-23.3: no se elimina; se desactiva y deja de recibir entradas y salidas.
+         */
+        post: operations["inventory_products_deactivate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/products/{product_id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Movements
+         * @description CA-23.4: historial del producto, del movimiento más reciente al más antiguo.
+         */
+        get: operations["inventory_movements_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Movements
+         * @description Movimientos de la fecha más reciente a la más antigua, con filtros (CA-21.4).
+         */
+        get: operations["movements_list"];
+        put?: never;
+        /**
+         * Create Movement
+         * @description Registra un ingreso o egreso; un egreso puede asociarse a un evento (CA-21.1, CA-21.2).
+         */
+        post: operations["movements_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/movements/{movement_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void Movement
+         * @description Anula con motivo; queda el movimiento y su anulación, no se edita (CA-21.3, RN17).
+         */
+        post: operations["movements_void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/notes/{note_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Note
+         * @description Edita una observación: su autor o quien tenga `event_notes:edit_any`, solo el
+         *     administrador (R-ACT-1, R-ACT-6).
+         */
+        put: operations["notes_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/{payment_id}/receipt.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Payment Receipt
+         * @description Comprobante interno del pago en PDF (HU20). Si está anulado, sale con la marca.
+         */
+        get: operations["payments_receipt_pdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/{payment_id}/void": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Void Payment
+         * @description Anula un pago parcial con motivo; queda el pago y su anulación (CA-19.5, RN17).
+         */
+        post: operations["payments_void"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Purchases
+         * @description De la más reciente a la más antigua.
+         */
+        get: operations["purchasing_purchases_list"];
+        put?: never;
+        /**
+         * Create Purchase
+         * @description CA-28.1: solicitud de compra con sus líneas; se puede vincular a un evento.
+         */
+        post: operations["purchasing_purchases_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/purchases/{purchase_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Purchase */
+        get: operations["purchasing_purchases_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/purchases/{purchase_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Purchase
+         * @description Cancela una compra solicitada u ordenada, con motivo.
+         */
+        post: operations["purchasing_purchases_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/purchases/{purchase_id}/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Order Purchase
+         * @description CA-29.1: elige proveedor y costo unitario de cada línea.
+         */
+        post: operations["purchasing_purchases_order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/purchases/{purchase_id}/receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive Purchase
+         * @description CA-29.2 y CA-29.3: una sola vez; registra las entradas al almacén con costo y proveedor.
+         */
+        post: operations["purchasing_purchases_receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/shortages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Shortages
+         * @description CA-28.2 ("Agregar faltantes"): productos con stock bajo y cuánto pedir.
+         */
+        get: operations["purchasing_shortages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/suppliers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Suppliers
+         * @description CA-27.2: sin distinguir mayúsculas ni tildes, ordenados por razón social.
+         */
+        get: operations["purchasing_suppliers_list"];
+        put?: never;
+        /** Create Supplier */
+        post: operations["purchasing_suppliers_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/suppliers/{supplier_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Supplier */
+        get: operations["purchasing_suppliers_get"];
+        /** Update Supplier */
+        put: operations["purchasing_suppliers_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/suppliers/{supplier_id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate Supplier */
+        post: operations["purchasing_suppliers_activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/suppliers/{supplier_id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate Supplier
+         * @description CA-27.3: no se elimina; se desactiva y deja de recibir órdenes.
+         */
+        post: operations["purchasing_suppliers_deactivate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -707,6 +1484,157 @@ export interface paths {
          * @description Enviada, aceptada, rechazada o de vuelta a borrador (R-COT-3).
          */
         post: operations["quotes_change_status"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/cash-flow": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cash Flow
+         * @description Ingresos, egresos por categoría y saldo del periodo, por mes; sin anulados (CA-22.1).
+         */
+        get: operations["reports_cash_flow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/events/{event_id}/result": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event Result
+         * @description Cobrado al cliente, egresos del evento por categoría y resultado (CA-22.3).
+         */
+        get: operations["reports_event_result"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/events/{event_id}/sheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event Sheet
+         * @description Evento, cliente, servicios, personal, materiales, pagos y seguimiento en una petición.
+         *
+         *     Se arma en el momento con lo que cada módulo sabe (CA-14.7). `account` va vacío sin
+         *     `payments:record` (CA-14.5); `staff`, vacío mientras no haya información de personal.
+         */
+        get: operations["reports_event_sheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Workers
+         * @description Lista trabajadores por función y estado, con búsqueda por nombre o documento.
+         */
+        get: operations["staff_search"];
+        put?: never;
+        /**
+         * Register Worker
+         * @description Registra un trabajador nuevo, siempre activo. El documento no puede repetirse.
+         */
+        post: operations["staff_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/{worker_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Worker
+         * @description Ficha completa de un trabajador, activo o inactivo (la baja es lógica).
+         */
+        get: operations["staff_get"];
+        /**
+         * Update Worker
+         * @description Reemplazo completo de los datos editables: si un opcional se omite, se limpia.
+         */
+        put: operations["staff_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/{worker_id}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activate Worker
+         * @description Reactiva a un trabajador dado de baja, con motivo opcional.
+         */
+        post: operations["staff_activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/{worker_id}/deactivate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Deactivate Worker
+         * @description Baja lógica con motivo opcional. Repetir la operación no audita otra vez.
+         */
+        post: operations["staff_deactivate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -835,6 +1763,155 @@ export interface components {
          * @enum {string}
          */
         AccessResult: "SUCCESS" | "INVALID_CREDENTIALS" | "INACTIVE_USER";
+        /** AccountPaymentOut */
+        AccountPaymentOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Number
+             * @description PAG-AAAA-NNNN (CA-20.1)
+             */
+            number: string;
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Recorded By
+             * Format: uuid
+             */
+            recorded_by: string;
+            /**
+             * Recorded By Name
+             * @description Vacío si el usuario no existe
+             */
+            recorded_by_name: string;
+            /** Reference */
+            reference: string | null;
+            void: components["schemas"]["PaymentVoidOut"] | null;
+            /**
+             * Voidable
+             * @description Solo un pago parcial vigente se anula (CA-19.5)
+             */
+            voidable: boolean;
+            /**
+             * Voided
+             * @description Anulado: no cuenta en el saldo (CA-19.3)
+             */
+            voided: boolean;
+        };
+        /** ActivityIn */
+        ActivityIn: {
+            /**
+             * Description
+             * @description Hasta 200 caracteres
+             */
+            description: string;
+            /**
+             * Responsible Id
+             * @description Administrador o encargado de eventos activo. Si se omite: quien crea
+             */
+            responsible_id?: string | null;
+        };
+        /** ActivityOut */
+        ActivityOut: {
+            /** Completed At */
+            completed_at: string | null;
+            /** Completed By */
+            completed_by: string | null;
+            /**
+             * Completed By Name
+             * @description Vacío si no se conoce el nombre del usuario
+             */
+            completed_by_name: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created By Name
+             * @description Vacío si no se conoce el nombre del usuario
+             */
+            created_by_name: string | null;
+            /** Description */
+            description: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Responsible Id
+             * Format: uuid
+             */
+            responsible_id: string;
+            /**
+             * Responsible Name
+             * @description Vacío si no se conoce el nombre del usuario
+             */
+            responsible_name: string | null;
+            status: components["schemas"]["ActivityStatus"];
+        };
+        /** ActivityResponsibleIn */
+        ActivityResponsibleIn: {
+            /**
+             * Responsible Id
+             * Format: uuid
+             */
+            responsible_id: string;
+        };
+        /**
+         * ActivityStatus
+         * @enum {string}
+         */
+        ActivityStatus: "PENDING" | "DONE";
+        /** AdjustmentIn */
+        AdjustmentIn: {
+            /** Occurred On */
+            occurred_on?: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Con signo: positivo suma, negativo resta
+             * @example 12.5
+             */
+            quantity: string;
+            /** Reason */
+            reason: string;
+        };
+        /** CancelIn */
+        CancelIn: {
+            /** Reason */
+            reason: string;
+        };
         /** CancellationOut */
         CancellationOut: {
             /**
@@ -849,6 +1926,85 @@ export interface components {
             /** Refund Cents */
             refund_cents: number | null;
         };
+        /** CashFlowMonthOut */
+        CashFlowMonthOut: {
+            /**
+             * Client Payments Cents
+             * @description Pagos de clientes netos de devoluciones
+             */
+            client_payments_cents: number;
+            /** Expense Cents */
+            expense_cents: number;
+            expenses: components["schemas"]["ExpensesOut"];
+            /** Income Cents */
+            income_cents: number;
+            /**
+             * Month
+             * @description AAAA-MM
+             */
+            month: string;
+            /**
+             * Net Cents
+             * @description Saldo del periodo: ingresos − egresos
+             */
+            net_cents: number;
+            /** Other Income Cents */
+            other_income_cents: number;
+            /** Refunds Cents */
+            refunds_cents: number;
+        };
+        /** CashFlowOut */
+        CashFlowOut: {
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Date From
+             * Format: date
+             */
+            date_from: string;
+            /**
+             * Date To
+             * Format: date
+             */
+            date_to: string;
+            /**
+             * Months
+             * @description Solo los meses con movimiento
+             */
+            months: components["schemas"]["CashFlowMonthOut"][];
+            totals: components["schemas"]["CashSummaryOut"];
+        };
+        /** CashSummaryOut */
+        CashSummaryOut: {
+            /**
+             * Client Payments Cents
+             * @description Pagos de clientes netos de devoluciones
+             */
+            client_payments_cents: number;
+            /** Expense Cents */
+            expense_cents: number;
+            expenses: components["schemas"]["ExpensesOut"];
+            /** Income Cents */
+            income_cents: number;
+            /**
+             * Net Cents
+             * @description Saldo del periodo: ingresos − egresos
+             */
+            net_cents: number;
+            /** Other Income Cents */
+            other_income_cents: number;
+            /** Refunds Cents */
+            refunds_cents: number;
+        };
+        /**
+         * Category
+         * @description R-INV-2: categorías de lista fija.
+         * @enum {string}
+         */
+        Category: "SUPPLIES" | "BEVERAGES" | "DINNERWARE" | "GLASSWARE" | "CUTLERY" | "LINENS" | "FURNITURE" | "DISPOSABLES" | "CLEANING" | "OTHER";
         /** CategoryIn */
         CategoryIn: {
             /** Name */
@@ -883,7 +2039,7 @@ export interface components {
             address?: string | null;
             /** Document Number */
             document_number: string;
-            document_type: components["schemas"]["DocumentType"];
+            document_type: components["schemas"]["local_eventos__modules__commercial__domain__clients__client__DocumentType"];
             /** Email */
             email?: string | null;
             /** Name */
@@ -914,7 +2070,7 @@ export interface components {
             address: string | null;
             /** Document Number */
             document_number: string;
-            document_type: components["schemas"]["DocumentType"];
+            document_type: components["schemas"]["local_eventos__modules__commercial__domain__clients__client__DocumentType"];
             /** Email */
             email: string | null;
             /**
@@ -926,6 +2082,51 @@ export interface components {
             name: string;
             /** Phone */
             phone: string;
+        };
+        /**
+         * ContractAccountOut
+         * @description CA-19.4: total, pagado, saldo, fecha límite y pagos con quién los registró.
+         */
+        ContractAccountOut: {
+            /**
+             * Balance Cents
+             * @description Total − pagos vigentes + devoluciones (RN15); 0 si el contrato está anulado
+             */
+            balance_cents: number;
+            /**
+             * Balance Due Date
+             * Format: date
+             */
+            balance_due_date: string;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Overdue
+             * @description Saldo vencido: solo un aviso (R-PAG-2)
+             */
+            overdue: boolean;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes (adelanto incluido)
+             */
+            paid_cents: number;
+            /** Payments */
+            payments: components["schemas"]["AccountPaymentOut"][];
+            /** Refunded Cents */
+            refunded_cents: number;
+            status: components["schemas"]["ContractStatus"];
+            /** Total Cents */
+            total_cents: number;
         };
         /** ContractCancelIn */
         ContractCancelIn: {
@@ -958,8 +2159,11 @@ export interface components {
         ContractOut: {
             /** Advance Cents */
             advance_cents: number;
-            /** Balance Cents */
-            balance_cents: number;
+            /**
+             * Balance Cents
+             * @description Pendiente de firma: total − adelanto; firmado: total − pagos vigentes + devoluciones (RN15). Vacío sin `payments:record`
+             */
+            balance_cents: number | null;
             /**
              * Balance Due Date
              * Format: date
@@ -1005,6 +2209,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes. Vacío sin `payments:record`
+             */
+            paid_cents: number | null;
             /** Payments */
             payments: components["schemas"]["PaymentOut"][];
             /** Quote Code */
@@ -1029,6 +2238,31 @@ export interface components {
             page_size: number;
             /** Total */
             total: number;
+        };
+        /** ContractPaymentCreatedOut */
+        ContractPaymentCreatedOut: {
+            account: components["schemas"]["ContractAccountOut"];
+            payment: components["schemas"]["AccountPaymentOut"];
+        };
+        /** ContractPaymentIn */
+        ContractPaymentIn: {
+            /**
+             * Amount Cents
+             * @description Mayor que cero y sin superar el saldo (RN14)
+             */
+            amount_cents: number;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Paid On
+             * Format: date
+             * @description No puede ser futura (R-PAG-4)
+             */
+            paid_on: string;
+            /**
+             * Reference
+             * @description N.º de operación, voucher, etc.
+             */
+            reference?: string | null;
         };
         /** ContractSignIn */
         ContractSignIn: {
@@ -1152,11 +2386,47 @@ export interface components {
              */
             upcoming: components["schemas"]["DashboardQuoteOut"][];
         };
+        /** EntryIn */
+        EntryIn: {
+            /** Expires On */
+            expires_on?: string | null;
+            /** Lot */
+            lot?: string | null;
+            /**
+             * Occurred On
+             * @description Por defecto, hoy
+             */
+            occurred_on?: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Cantidad sin signo como texto, hasta 3 decimales
+             * @example 12.5
+             */
+            quantity: string;
+            /**
+             * Reason
+             * @description Observación opcional
+             */
+            reason?: string | null;
+            /** Supplier Id */
+            supplier_id?: string | null;
+            /**
+             * Unit Cost Cents
+             * @description Costo unitario en céntimos: S/ 3.50 = 350
+             */
+            unit_cost_cents: number;
+        };
         /**
-         * DocumentType
+         * EventAction
+         * @description Qué cambió en el evento, para el historial (CA-11.5).
          * @enum {string}
          */
-        DocumentType: "DNI" | "RUC";
+        EventAction: "PLANNING_UPDATED" | "CONFIRMED" | "STARTED" | "FINISHED" | "CANCELLED";
         /** EventCancelIn */
         EventCancelIn: {
             /** Note */
@@ -1188,6 +2458,27 @@ export interface components {
              */
             refund_cents: number | null;
         };
+        /** EventChangeOut */
+        EventChangeOut: {
+            action: components["schemas"]["EventAction"];
+            /**
+             * Changed At
+             * Format: date-time
+             */
+            changed_at: string;
+            /**
+             * Changed By
+             * Format: uuid
+             */
+            changed_by: string;
+            /**
+             * Changed By Name
+             * @description Vacío si no se conoce el nombre
+             */
+            changed_by_name: string | null;
+            /** Fields */
+            fields: components["schemas"]["FieldChangeOut"][];
+        };
         /** EventConvertIn */
         EventConvertIn: {
             /**
@@ -1201,8 +2492,80 @@ export interface components {
              */
             coordinator_id?: string | null;
         };
+        /** EventMaterialOut */
+        EventMaterialOut: {
+            /** Code */
+            code: string;
+            kind: components["schemas"]["ProductKind"];
+            /** Name */
+            name: string;
+            /**
+             * Out
+             * @description Salió para el evento
+             * @example 12.500
+             */
+            out: string;
+            /**
+             * Pending Return
+             * @description Reutilizable que falta devolver
+             * @example 12.500
+             */
+            pending_return: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Returned
+             * @description Volvió al almacén
+             * @example 12.500
+             */
+            returned: string;
+            unit: components["schemas"]["Unit"];
+            /**
+             * Wasted
+             * @description Se perdió o se dañó en el evento
+             * @example 12.500
+             */
+            wasted: string;
+        };
+        /**
+         * EventMovementIn
+         * @description Salida o devolución de un evento.
+         */
+        EventMovementIn: {
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Occurred On */
+            occurred_on?: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Cantidad sin signo como texto, hasta 3 decimales
+             * @example 12.5
+             */
+            quantity: string;
+            /**
+             * Reason
+             * @description Observación opcional
+             */
+            reason?: string | null;
+        };
         /** EventOut */
         EventOut: {
+            /**
+             * Balance Cents
+             * @description Saldo del contrato (RN15). Vacío sin `payments:record`
+             */
+            balance_cents: number | null;
             cancellation: components["schemas"]["EventCancellationOut"] | null;
             /**
              * Client Id
@@ -1255,6 +2618,11 @@ export interface components {
              * Format: uuid
              */
             id: string;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes del contrato (R-PAG-1). Vacío sin `payments:record`
+             */
+            paid_cents: number | null;
             /** Quote Code */
             quote_code: string;
             /**
@@ -1284,6 +2652,186 @@ export interface components {
             /** Total */
             total: number;
         };
+        /**
+         * EventPlanningIn
+         * @description CA-11.2: todos obligatorios. Si la hora de fin es menor que la de inicio, el evento
+         *     termina al día siguiente (R-COT-1).
+         */
+        EventPlanningIn: {
+            /**
+             * Coordinator Id
+             * Format: uuid
+             * @description Administrador o encargado de eventos activo
+             */
+            coordinator_id: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /**
+             * Event Date
+             * Format: date
+             * @description Hoy o una fecha futura (en Lima)
+             */
+            event_date: string;
+            /**
+             * Guests
+             * @description Entre 1 y 10000. No recalcula el total (R-EVT-7)
+             */
+            guests: number;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            /**
+             * Venue
+             * @description Hasta 300 caracteres
+             */
+            venue: string;
+        };
+        /** EventPlanningOut */
+        EventPlanningOut: {
+            /**
+             * Balance Cents
+             * @description Saldo del contrato (RN15). Vacío sin `payments:record`
+             */
+            balance_cents: number | null;
+            cancellation: components["schemas"]["EventCancellationOut"] | null;
+            /**
+             * Client Id
+             * Format: uuid
+             */
+            client_id: string;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Coordinator Id
+             * Format: uuid
+             */
+            coordinator_id: string;
+            /**
+             * Coordinator Name
+             * @description Vacío si el usuario ya no está activo
+             */
+            coordinator_name: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Ends Next Day */
+            ends_next_day: boolean;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes del contrato (R-PAG-1). Vacío sin `payments:record`
+             */
+            paid_cents: number | null;
+            /** Quote Code */
+            quote_code: string;
+            /**
+             * Quote Id
+             * Format: uuid
+             */
+            quote_id: string;
+            /** Services */
+            services: components["schemas"]["EventServiceOut"][];
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["EventStatus"];
+            /** Venue */
+            venue: string;
+            /**
+             * Warnings
+             * @description `staff_may_need_review` si cambió la fecha o el horario (R-EVT-9)
+             */
+            warnings: components["schemas"]["PlanningWarning"][];
+        };
+        /** EventResultOut */
+        EventResultOut: {
+            /**
+             * Balance Cents
+             * @description Saldo por cobrar (RN15)
+             */
+            balance_cents: number;
+            /** Client Name */
+            client_name: string;
+            /**
+             * Collected Cents
+             * @description Cobrado al cliente, neto de devoluciones
+             */
+            collected_cents: number;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Event Code */
+            event_code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Event Status */
+            event_status: string;
+            /** Expense Cents */
+            expense_cents: number;
+            expenses: components["schemas"]["ExpensesOut"];
+            /**
+             * Result Cents
+             * @description Cobrado − egresos asociados al evento
+             */
+            result_cents: number;
+            /**
+             * Total Cents
+             * @description Total contratado
+             */
+            total_cents: number;
+        };
         /** EventServiceOut */
         EventServiceOut: {
             /** Description */
@@ -1295,9 +2843,29 @@ export interface components {
             service_id: string | null;
             unit: components["schemas"]["LineUnit"];
         };
+        /** EventSheetOut */
+        EventSheetOut: {
+            /** @description Vacío sin el permiso `payments:record` */
+            account: components["schemas"]["SheetAccountOut"] | null;
+            client: components["schemas"]["SheetClientOut"];
+            event: components["schemas"]["SheetEventOut"];
+            follow_up: components["schemas"]["SheetFollowUpOut"];
+            /**
+             * Materials
+             * @description Por producto, ordenado por nombre
+             */
+            materials: components["schemas"]["SheetMaterialOut"][];
+            /** Services */
+            services: components["schemas"]["SheetServiceOut"][];
+            /**
+             * Staff
+             * @description Vacío (`null`): sin información de personal (CA-14.3)
+             */
+            staff: components["schemas"]["SheetStaffOut"][] | null;
+        };
         /**
          * EventStatus
-         * @description DOMAIN.md §3. HU10 solo crea eventos programados; los demás estados llegan con HU11.
+         * @description DOMAIN.md §3: programado → confirmado → en ejecución → finalizado · cancelado.
          * @enum {string}
          */
         EventStatus: "SCHEDULED" | "CONFIRMED" | "IN_PROGRESS" | "FINISHED" | "CANCELLED";
@@ -1352,6 +2920,32 @@ export interface components {
          * @enum {string}
          */
         EventType: "WEDDING" | "BIRTHDAY" | "QUINCEANERA" | "CORPORATE" | "GRADUATION" | "OTHER";
+        /** ExpensesOut */
+        ExpensesOut: {
+            /** Other Cents */
+            other_cents: number;
+            /** Staff Cents */
+            staff_cents: number;
+            /** Supplies Cents */
+            supplies_cents: number;
+            /** Transport Cents */
+            transport_cents: number;
+        };
+        /** FieldChangeOut */
+        FieldChangeOut: {
+            /** After */
+            after: string | number;
+            /**
+             * Before
+             * @description Fechas y horas en ISO; IDs como texto
+             */
+            before: string | number;
+            /**
+             * Field
+             * @description `event_date`, `start_time`, `end_time`, `venue`, `guests`, `coordinator_id` o `status`
+             */
+            field: string;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1428,6 +3022,148 @@ export interface components {
             permissions: components["schemas"]["Permission"][];
             role: components["schemas"]["Role"];
         };
+        /**
+         * MovementCategory
+         * @enum {string}
+         */
+        MovementCategory: "SUPPLIES" | "STAFF" | "TRANSPORT" | "OTHER_EXPENSE" | "OTHER_INCOME";
+        /** MovementIn */
+        MovementIn: {
+            /** Amount Cents */
+            amount_cents: number;
+            /** @description Egreso: SUPPLIES, STAFF, TRANSPORT u OTHER_EXPENSE. Ingreso: OTHER_INCOME */
+            category: components["schemas"]["MovementCategory"];
+            /** Concept */
+            concept: string;
+            /**
+             * Event Id
+             * @description Evento asociado, si lo hay (RN16)
+             */
+            event_id?: string | null;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Occurred On
+             * Format: date
+             * @description No puede ser futura (R-PAG-4)
+             */
+            occurred_on: string;
+            /** Reference */
+            reference?: string | null;
+            type: components["schemas"]["MovementType"];
+        };
+        /**
+         * MovementKind
+         * @enum {string}
+         */
+        MovementKind: "ENTRY" | "EXIT" | "RETURN" | "WASTE" | "ADJUSTMENT";
+        /**
+         * MovementState
+         * @enum {string}
+         */
+        MovementState: "ACTIVE" | "VOIDED";
+        /**
+         * MovementType
+         * @enum {string}
+         */
+        MovementType: "INCOME" | "EXPENSE";
+        /** MovementVoidIn */
+        MovementVoidIn: {
+            /**
+             * Reason
+             * @description Motivo obligatorio (RN17)
+             */
+            reason: string;
+        };
+        /** MovementVoidOut */
+        MovementVoidOut: {
+            /** Reason */
+            reason: string;
+            /**
+             * Voided At
+             * Format: date-time
+             */
+            voided_at: string;
+            /**
+             * Voided By
+             * Format: uuid
+             */
+            voided_by: string;
+            /** Voided By Name */
+            voided_by_name: string;
+        };
+        /** NoteIn */
+        NoteIn: {
+            /**
+             * Text
+             * @description Hasta 1000 caracteres
+             */
+            text: string;
+        };
+        /** NoteOut */
+        NoteOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created By Name
+             * @description Vacío si no se conoce el nombre del usuario
+             */
+            created_by_name: string | null;
+            /** Edited At */
+            edited_at: string | null;
+            /**
+             * Edited By
+             * @description Quién la editó por última vez
+             */
+            edited_by: string | null;
+            /**
+             * Edited By Name
+             * @description Vacío si no se conoce el nombre del usuario
+             */
+            edited_by_name: string | null;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Text */
+            text: string;
+        };
+        /** OrderIn */
+        OrderIn: {
+            /** Lines */
+            lines: components["schemas"]["OrderLineIn"][];
+            /**
+             * Supplier Id
+             * Format: uuid
+             */
+            supplier_id: string;
+        };
+        /** OrderLineIn */
+        OrderLineIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Unit Cost Cents
+             * @description Costo unitario en céntimos: S/ 3.50 = 350
+             */
+            unit_cost_cents: number;
+        };
         /** PaymentIn */
         PaymentIn: {
             method: components["schemas"]["PaymentMethod"];
@@ -1446,7 +3182,7 @@ export interface components {
          * PaymentKind
          * @enum {string}
          */
-        PaymentKind: "ADVANCE" | "REFUND";
+        PaymentKind: "ADVANCE" | "INSTALLMENT" | "REFUND";
         /**
          * PaymentMethod
          * @enum {string}
@@ -1464,18 +3200,51 @@ export interface components {
             kind: components["schemas"]["PaymentKind"];
             method: components["schemas"]["PaymentMethod"];
             /**
+             * Number
+             * @description PAG-AAAA-NNNN (CA-20.1)
+             */
+            number: string;
+            /**
              * Paid On
              * Format: date
              */
             paid_on: string;
             /** Reference */
             reference: string | null;
+            /**
+             * Voided
+             * @description Anulado: no cuenta en el saldo (CA-19.3)
+             */
+            voided: boolean;
+        };
+        /** PaymentVoidOut */
+        PaymentVoidOut: {
+            /** Reason */
+            reason: string;
+            /**
+             * Voided At
+             * Format: date-time
+             */
+            voided_at: string;
+            /**
+             * Voided By
+             * Format: uuid
+             */
+            voided_by: string;
+            /** Voided By Name */
+            voided_by_name: string;
         };
         /**
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage";
+        /**
+         * PlanningWarning
+         * @description R-EVT-9: cambió la fecha o el horario; el personal asignado puede tener otro horario.
+         * @enum {string}
+         */
+        PlanningWarning: "staff_may_need_review";
         /**
          * PriceUnit
          * @description Cómo se cobra el servicio: el buffet por persona, lo demás por unidad.
@@ -1501,6 +3270,187 @@ export interface components {
              */
             type: string;
         };
+        /** ProductIn */
+        ProductIn: {
+            category: components["schemas"]["Category"];
+            /**
+             * Code
+             * @description Único, se guarda en mayúsculas (máx. 20)
+             */
+            code: string;
+            /** @description CONSUMABLE (se gasta) o REUSABLE (vuelve) */
+            kind: components["schemas"]["ProductKind"];
+            /**
+             * Min Stock
+             * @description Cantidad sin signo como texto, hasta 3 decimales
+             * @default 0
+             * @example 12.5
+             */
+            min_stock: string;
+            /** Name */
+            name: string;
+            unit: components["schemas"]["Unit"];
+        };
+        /**
+         * ProductKind
+         * @enum {string}
+         */
+        ProductKind: "CONSUMABLE" | "REUSABLE";
+        /** ProductOut */
+        ProductOut: {
+            /** Active */
+            active: boolean;
+            /**
+             * Avg Cost Cents
+             * @description Costo promedio ponderado por unidad (R-INV-3)
+             */
+            avg_cost_cents: number;
+            category: components["schemas"]["Category"];
+            /** Code */
+            code: string;
+            /** Currency */
+            currency: string;
+            /**
+             * Expiring Soon
+             * @description Alguna entrada con stock vence en ≤ 15 días
+             */
+            expiring_soon: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Is Low Stock
+             * @description Stock ≤ mínimo (CA-23.5)
+             */
+            is_low_stock: boolean;
+            kind: components["schemas"]["ProductKind"];
+            /**
+             * Min Stock
+             * @description Cantidad decimal con 3 decimales
+             * @example 12.500
+             */
+            min_stock: string;
+            /** Name */
+            name: string;
+            /** Next Expiry */
+            next_expiry: string | null;
+            /**
+             * Stock
+             * @description Cantidad decimal con 3 decimales
+             * @example 12.500
+             */
+            stock: string;
+            /** Stock Value Cents */
+            stock_value_cents: number;
+            unit: components["schemas"]["Unit"];
+        };
+        /** PurchaseLineOut */
+        PurchaseLineOut: {
+            /** Expires On */
+            expires_on: string | null;
+            /** Lot */
+            lot: string | null;
+            /** Product Code */
+            product_code: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string | null;
+            /**
+             * Quantity
+             * @description Cantidad decimal con 3 decimales
+             * @example 12.500
+             */
+            quantity: string;
+            /** Received Quantity */
+            received_quantity: string | null;
+            /** Total Cents */
+            total_cents: number | null;
+            unit: components["schemas"]["Unit"] | null;
+            /** Unit Cost Cents */
+            unit_cost_cents: number | null;
+        };
+        /** PurchaseOut */
+        PurchaseOut: {
+            /** Cancel Reason */
+            cancel_reason: string | null;
+            /** Cancelled At */
+            cancelled_at: string | null;
+            /** Code */
+            code: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /** Currency */
+            currency: string;
+            /** Event Id */
+            event_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Invoice Number */
+            invoice_number: string | null;
+            /** Lines */
+            lines: components["schemas"]["PurchaseLineOut"][];
+            /** Notes */
+            notes: string | null;
+            /** Ordered At */
+            ordered_at: string | null;
+            /** Received At */
+            received_at: string | null;
+            status: components["schemas"]["PurchaseStatus"];
+            /** Supplier Id */
+            supplier_id: string | null;
+            /** Supplier Name */
+            supplier_name: string | null;
+            /**
+             * Total Cents
+             * @description Pedido al ordenar; real al recibir
+             */
+            total_cents: number | null;
+        };
+        /** PurchasePageOut */
+        PurchasePageOut: {
+            /** Items */
+            items: components["schemas"]["PurchaseOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** PurchaseRequestIn */
+        PurchaseRequestIn: {
+            /**
+             * Event Id
+             * @description Evento para el que se compra
+             */
+            event_id?: string | null;
+            /** Lines */
+            lines: components["schemas"]["RequestLineIn"][];
+            /** Notes */
+            notes?: string | null;
+        };
+        /**
+         * PurchaseStatus
+         * @enum {string}
+         */
+        PurchaseStatus: "REQUESTED" | "ORDERED" | "RECEIVED" | "CANCELLED";
         /** QuoteIn */
         QuoteIn: {
             /**
@@ -1702,10 +3652,72 @@ export interface components {
              */
             valid_until: string;
         };
+        /** ReceiveIn */
+        ReceiveIn: {
+            /**
+             * Invoice Number
+             * @description Factura o boleta del proveedor
+             */
+            invoice_number?: string | null;
+            /**
+             * Lines
+             * @description Todas las líneas de la compra (R-COM-2)
+             */
+            lines: components["schemas"]["ReceiveLineIn"][];
+            /**
+             * Received On
+             * @description Por defecto, hoy
+             */
+            received_on?: string | null;
+        };
+        /** ReceiveLineIn */
+        ReceiveLineIn: {
+            /** Expires On */
+            expires_on?: string | null;
+            /** Lot */
+            lot?: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Received Quantity
+             * @description Cantidad que llegó (puede ser 0)
+             * @example 12.5
+             */
+            received_quantity: string;
+        };
+        /** RecordedMovementOut */
+        RecordedMovementOut: {
+            /** Avg Cost Cents */
+            avg_cost_cents: number;
+            movement: components["schemas"]["local_eventos__modules__inventory__presentation__schemas__MovementOut"];
+            /**
+             * Stock
+             * @description Stock del producto después del movimiento
+             * @example 12.500
+             */
+            stock: string;
+        };
         /** RefreshIn */
         RefreshIn: {
             /** Refresh Token */
             refresh_token: string;
+        };
+        /** RequestLineIn */
+        RequestLineIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Cantidad sin signo como texto, hasta 3 decimales
+             * @example 12.5
+             */
+            quantity: string;
         };
         /**
          * Role
@@ -1755,6 +3767,318 @@ export interface components {
             /** Reference Price Cents */
             reference_price_cents: number;
         };
+        /**
+         * SheetAccountOut
+         * @description CA-14.5: total, pagado, saldo, fecha límite y pagos del contrato.
+         */
+        SheetAccountOut: {
+            /**
+             * Balance Cents
+             * @description Saldo por cobrar (RN15)
+             */
+            balance_cents: number;
+            /**
+             * Balance Due Date
+             * Format: date
+             */
+            balance_due_date: string;
+            /** Contract Code */
+            contract_code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            contract_status: components["schemas"]["ContractStatus"];
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Overdue */
+            overdue: boolean;
+            /**
+             * Paid Cents
+             * @description Pagos vigentes (adelanto incluido)
+             */
+            paid_cents: number;
+            /** Payments */
+            payments: components["schemas"]["SheetPaymentOut"][];
+            /** Refunded Cents */
+            refunded_cents: number;
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** SheetActivityOut */
+        SheetActivityOut: {
+            /** Completed At */
+            completed_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Description */
+            description: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Responsible Id
+             * Format: uuid
+             */
+            responsible_id: string;
+            /**
+             * Responsible Name
+             * @description Vacío si el usuario no existe
+             */
+            responsible_name: string;
+            status: components["schemas"]["ActivityStatus"];
+        };
+        /** SheetClientOut */
+        SheetClientOut: {
+            /** Document Number */
+            document_number: string;
+            /** Document Type */
+            document_type: string;
+            /** Email */
+            email: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string;
+        };
+        /** SheetEventOut */
+        SheetEventOut: {
+            /** Code */
+            code: string;
+            /**
+             * Contract Id
+             * Format: uuid
+             */
+            contract_id: string;
+            /**
+             * Coordinator Id
+             * Format: uuid
+             */
+            coordinator_id: string;
+            /**
+             * Coordinator Name
+             * @description Vacío si el usuario no existe
+             */
+            coordinator_name: string | null;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Ends Next Day */
+            ends_next_day: boolean;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            event_type: components["schemas"]["EventType"];
+            /** Guests */
+            guests: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["EventStatus"];
+            /** Venue */
+            venue: string;
+        };
+        /**
+         * SheetFollowUpOut
+         * @description CA-14.6: actividades pendientes y completadas, y las últimas observaciones.
+         */
+        SheetFollowUpOut: {
+            /**
+             * Done
+             * @description Por orden de creación
+             */
+            done: components["schemas"]["SheetActivityOut"][];
+            /**
+             * Pending
+             * @description Por orden de creación
+             */
+            pending: components["schemas"]["SheetActivityOut"][];
+            /**
+             * Recent Notes
+             * @description De la más reciente a la más antigua
+             */
+            recent_notes: components["schemas"]["SheetNoteOut"][];
+        };
+        /** SheetMaterialOut */
+        SheetMaterialOut: {
+            /** Code */
+            code: string;
+            kind: components["schemas"]["ProductKind"];
+            /** Name */
+            name: string;
+            /**
+             * Out
+             * @description Salió para el evento (3 decimales)
+             */
+            out: string;
+            /**
+             * Pending Return
+             * @description Reutilizable que falta devolver
+             */
+            pending_return: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Returned
+             * @description Volvió al almacén
+             */
+            returned: string;
+            unit: components["schemas"]["Unit"];
+            /**
+             * Wasted
+             * @description Se perdió o se dañó en el evento
+             */
+            wasted: string;
+        };
+        /** SheetNoteOut */
+        SheetNoteOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Created By
+             * Format: uuid
+             */
+            created_by: string;
+            /**
+             * Created By Name
+             * @description Vacío si el usuario no existe
+             */
+            created_by_name: string;
+            /** Edited At */
+            edited_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Text */
+            text: string;
+        };
+        /** SheetPaymentOut */
+        SheetPaymentOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["PaymentKind"];
+            method: components["schemas"]["PaymentMethod"];
+            /** Number */
+            number: string;
+            /**
+             * Paid On
+             * Format: date
+             */
+            paid_on: string;
+            /**
+             * Voided
+             * @description Anulado: no cuenta en el saldo
+             */
+            voided: boolean;
+        };
+        /**
+         * SheetServiceOut
+         * @description Servicio contratado, sin precios (CA-14.2).
+         */
+        SheetServiceOut: {
+            /** Description */
+            description: string;
+            kind: components["schemas"]["LineKind"];
+            /** Quantity */
+            quantity: number;
+            /** Service Id */
+            service_id: string | null;
+            unit: components["schemas"]["LineUnit"];
+        };
+        /** SheetStaffOut */
+        SheetStaffOut: {
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Name */
+            name: string;
+            /**
+             * Role
+             * @description Función en el evento
+             */
+            role: string;
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
+        };
+        /** ShortageOut */
+        ShortageOut: {
+            /** Code */
+            code: string;
+            /**
+             * Min Stock
+             * @description Cantidad decimal con 3 decimales
+             * @example 12.500
+             */
+            min_stock: string;
+            /** Name */
+            name: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Stock
+             * @description Cantidad decimal con 3 decimales
+             * @example 12.500
+             */
+            stock: string;
+            /**
+             * Suggested Quantity
+             * @description Para volver al mínimo; editable
+             * @example 12.500
+             */
+            suggested_quantity: string;
+            unit: components["schemas"]["Unit"];
+        };
         /** SignatureOut */
         SignatureOut: {
             /**
@@ -1769,6 +4093,51 @@ export interface components {
             signed_on: string;
             /** Signer Name */
             signer_name: string;
+        };
+        /** SupplierIn */
+        SupplierIn: {
+            /** Address */
+            address?: string | null;
+            /** Contact Name */
+            contact_name?: string | null;
+            /**
+             * Document Number
+             * @description RUC de 11 dígitos o DNI de 8
+             */
+            document_number: string;
+            document_type: components["schemas"]["local_eventos__modules__purchasing__domain__supplier__DocumentType"];
+            /** Email */
+            email?: string | null;
+            /**
+             * Name
+             * @description Razón social
+             */
+            name: string;
+            /** Phone */
+            phone: string;
+        };
+        /** SupplierOut */
+        SupplierOut: {
+            /** Active */
+            active: boolean;
+            /** Address */
+            address: string | null;
+            /** Contact Name */
+            contact_name: string | null;
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["local_eventos__modules__purchasing__domain__supplier__DocumentType"];
+            /** Email */
+            email: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string;
         };
         /** TokenOut */
         TokenOut: {
@@ -1794,6 +4163,12 @@ export interface components {
             token_type: string;
             user: components["schemas"]["MeOut"];
         };
+        /**
+         * Unit
+         * @description R-INV-1: unidades de lista fija.
+         * @enum {string}
+         */
+        Unit: "UNIT" | "KG" | "G" | "LITER" | "ML" | "DOZEN" | "PACKAGE" | "BOX";
         /** UserCreate */
         UserCreate: {
             /**
@@ -1850,6 +4225,369 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** VoidIn */
+        VoidIn: {
+            /**
+             * Reason
+             * @description Motivo obligatorio (RN17)
+             */
+            reason: string;
+        };
+        /** WasteIn */
+        WasteIn: {
+            /**
+             * Event Id
+             * @description Si se perdió en un evento: no baja el stock del almacén
+             */
+            event_id?: string | null;
+            /** Occurred On */
+            occurred_on?: string | null;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Cantidad sin signo como texto, hasta 3 decimales
+             * @example 12.5
+             */
+            quantity: string;
+            /** Reason */
+            reason: string;
+        };
+        /**
+         * WorkerCreate
+         * @description Cuerpo de `POST /v1/staff`: alta de un trabajador.
+         */
+        WorkerCreate: {
+            /**
+             * Document Number
+             * @description Número de documento; el dominio lo normaliza
+             */
+            document_number: string;
+            /** @description DNI o CE */
+            document_type: components["schemas"]["WorkerDocumentType"];
+            /** @description Función fija; OTHER exige descripción */
+            function?: components["schemas"]["WorkerFunction"] | null;
+            /**
+             * Function Description
+             * @description Solo con la función OTHER
+             */
+            function_description?: string | null;
+            /**
+             * Name
+             * @description Nombre completo del trabajador
+             */
+            name: string;
+            /**
+             * Overtime Applies
+             * @description Si corresponde pago de hora extra
+             * @default false
+             */
+            overtime_applies: boolean;
+            /**
+             * Overtime Rate Cents
+             * @description Monto por hora extra en céntimos; obligatorio si aplica
+             */
+            overtime_rate_cents?: number | null;
+            /**
+             * Phone
+             * @description Solo dígitos
+             */
+            phone?: string | null;
+            /**
+             * Rate Cents
+             * @description Tarifa referencial en céntimos: S/ 45.00 = 4500
+             */
+            rate_cents?: number | null;
+            /** @description FIXED o EVENTUAL */
+            worker_type?: components["schemas"]["WorkerType"] | null;
+        };
+        /**
+         * WorkerDocumentType
+         * @enum {string}
+         */
+        WorkerDocumentType: "DNI" | "CE";
+        /**
+         * WorkerFunction
+         * @description Función del trabajador: lista fija del sistema más `OTHER` con descripción.
+         * @enum {string}
+         */
+        WorkerFunction: "COOK" | "WAITER" | "BARTENDER" | "ASSISTANT" | "COORDINATOR" | "OTHER";
+        /**
+         * WorkerOut
+         * @description Ficha completa devuelta por la API, incluido el estado actual.
+         */
+        WorkerOut: {
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "PEN";
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["WorkerDocumentType"];
+            function: components["schemas"]["WorkerFunction"] | null;
+            /** Function Description */
+            function_description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Overtime Applies */
+            overtime_applies: boolean;
+            /** Overtime Rate Cents */
+            overtime_rate_cents: number | null;
+            /** Phone */
+            phone: string | null;
+            /** Rate Cents */
+            rate_cents: number | null;
+            status: components["schemas"]["WorkerStatus"];
+            worker_type: components["schemas"]["WorkerType"] | null;
+        };
+        /**
+         * WorkerPageOut
+         * @description Página del listado con el total que cumple el filtro.
+         */
+        WorkerPageOut: {
+            /** Items */
+            items: components["schemas"]["WorkerSummaryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * WorkerStatus
+         * @description Estado del trabajador: la baja es lógica, nunca borrado físico (R-STF-2).
+         * @enum {string}
+         */
+        WorkerStatus: "ACTIVE" | "INACTIVE";
+        /**
+         * WorkerStatusChange
+         * @description Cuerpo opcional de baja y reactivación: motivo libre, no obligatorio.
+         */
+        WorkerStatusChange: {
+            /**
+             * Reason
+             * @description Motivo de la baja o reactivación
+             */
+            reason?: string | null;
+        };
+        /**
+         * WorkerSummaryOut
+         * @description Fila del listado: incluye el documento, que comparte el permiso `staff:manage`.
+         */
+        WorkerSummaryOut: {
+            /** Document Number */
+            document_number: string;
+            document_type: components["schemas"]["WorkerDocumentType"];
+            function: components["schemas"]["WorkerFunction"] | null;
+            /** Function Description */
+            function_description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            status: components["schemas"]["WorkerStatus"];
+            worker_type: components["schemas"]["WorkerType"] | null;
+        };
+        /**
+         * WorkerType
+         * @description Tipo de trabajador: `FIXED` o `EVENTUAL`; opcional, sin interno/externo (R-STF-11).
+         * @enum {string}
+         */
+        WorkerType: "FIXED" | "EVENTUAL";
+        /**
+         * WorkerUpdate
+         * @description Cuerpo de `PUT /v1/staff/{worker_id}`: reemplazo completo de los editables.
+         */
+        WorkerUpdate: {
+            /**
+             * Document Number
+             * @description Número de documento; el dominio lo normaliza
+             */
+            document_number: string;
+            /** @description DNI o CE */
+            document_type: components["schemas"]["WorkerDocumentType"];
+            /** @description Función fija; OTHER exige descripción */
+            function?: components["schemas"]["WorkerFunction"] | null;
+            /**
+             * Function Description
+             * @description Solo con la función OTHER
+             */
+            function_description?: string | null;
+            /**
+             * Name
+             * @description Nombre completo del trabajador
+             */
+            name: string;
+            /**
+             * Overtime Applies
+             * @description Si corresponde pago de hora extra
+             * @default false
+             */
+            overtime_applies: boolean;
+            /**
+             * Overtime Rate Cents
+             * @description Monto por hora extra en céntimos; obligatorio si aplica
+             */
+            overtime_rate_cents?: number | null;
+            /**
+             * Phone
+             * @description Solo dígitos
+             */
+            phone?: string | null;
+            /**
+             * Rate Cents
+             * @description Tarifa referencial en céntimos: S/ 45.00 = 4500
+             */
+            rate_cents?: number | null;
+            /** @description FIXED o EVENTUAL */
+            worker_type?: components["schemas"]["WorkerType"] | null;
+        };
+        /**
+         * DocumentType
+         * @enum {string}
+         */
+        local_eventos__modules__commercial__domain__clients__client__DocumentType: "DNI" | "RUC";
+        /** MovementOut */
+        local_eventos__modules__inventory__presentation__schemas__MovementOut: {
+            /** Event Id */
+            event_id: string | null;
+            /** Expires On */
+            expires_on: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["MovementKind"];
+            /** Lot */
+            lot: string | null;
+            /**
+             * Occurred On
+             * Format: date
+             */
+            occurred_on: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Purchase Id */
+            purchase_id: string | null;
+            /**
+             * Quantity
+             * @description Positiva; con signo solo en el ajuste
+             * @example 12.500
+             */
+            quantity: string;
+            /** Reason */
+            reason: string | null;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Recorded By
+             * Format: uuid
+             */
+            recorded_by: string;
+            /**
+             * Stock Delta
+             * @description Cuánto cambió el stock del almacén
+             * @example 12.500
+             */
+            stock_delta: string;
+            /** Supplier Id */
+            supplier_id: string | null;
+            /** Unit Cost Cents */
+            unit_cost_cents: number | null;
+        };
+        /** MovementPageOut */
+        local_eventos__modules__inventory__presentation__schemas__MovementPageOut: {
+            /** Items */
+            items: components["schemas"]["local_eventos__modules__inventory__presentation__schemas__MovementOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** MovementOut */
+        local_eventos__modules__ledger__presentation__movement_schemas__MovementOut: {
+            /** Amount Cents */
+            amount_cents: number;
+            category: components["schemas"]["MovementCategory"];
+            /** Concept */
+            concept: string;
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Event Id */
+            event_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Occurred On
+             * Format: date
+             */
+            occurred_on: string;
+            /**
+             * Recorded At
+             * Format: date-time
+             */
+            recorded_at: string;
+            /**
+             * Recorded By
+             * Format: uuid
+             */
+            recorded_by: string;
+            /**
+             * Recorded By Name
+             * @description Vacío si el usuario no existe
+             */
+            recorded_by_name: string;
+            /** Reference */
+            reference: string | null;
+            type: components["schemas"]["MovementType"];
+            /** @description Anulado: no entra en los cálculos */
+            void: components["schemas"]["MovementVoidOut"] | null;
+        };
+        /** MovementPageOut */
+        local_eventos__modules__ledger__presentation__movement_schemas__MovementPageOut: {
+            /** Items */
+            items: components["schemas"]["local_eventos__modules__ledger__presentation__movement_schemas__MovementOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * DocumentType
+         * @enum {string}
+         */
+        local_eventos__modules__purchasing__domain__supplier__DocumentType: "RUC" | "DNI";
     };
     responses: never;
     parameters: never;
@@ -1953,6 +4691,211 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    activities_complete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `activity.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.activities_closed`, `activity.already_*` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    activities_reopen: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `activity.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.activities_closed`, `activity.already_*` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    activities_responsible_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityResponsibleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `activity.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.activities_closed` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `activity.responsible_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };
@@ -3299,6 +6242,64 @@ export interface operations {
             };
         };
     };
+    contracts_account_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractAccountOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     contracts_cancel: {
         parameters: {
             query?: never;
@@ -3360,6 +6361,77 @@ export interface operations {
                 };
             };
             /** @description `contract.reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    contracts_payments_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                contract_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractPaymentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractPaymentCreatedOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `contract.not_signed` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.exceeds_balance`, `payment.*` */
             422: {
                 headers: {
                     [name: string]: unknown;
@@ -3767,6 +6839,135 @@ export interface operations {
             };
         };
     };
+    events_activities_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_activities_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.activities_closed` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `activity.validation`, `activity.responsible_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     events_cancel: {
         parameters: {
             query?: never;
@@ -3834,6 +7035,2435 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_changes_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventChangeOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.invalid_transition` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_finish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.invalid_transition` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_notes_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NoteOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    events_notes_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NoteOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.notes_closed` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `note.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_planning_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventPlanningIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventPlanningOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_editable` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.date_past`, `event.time_invalid`, `event.guests_invalid`, `event.venue_required`, `event.venue_too_long`, `event.coordinator_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    events_start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.invalid_transition`, `event.not_event_day` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_event_materials: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventMaterialOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.event_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_movements_adjustment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdjustmentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordedMovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.insufficient_stock` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_movements_entry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EntryIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordedMovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_inactive` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_movements_exit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventMovementIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordedMovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found`, `inventory.event_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.insufficient_stock`, `inventory.event_not_assignable`, `inventory.product_inactive` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_movements_return: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EventMovementIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordedMovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found`, `inventory.event_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.return_exceeds` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_movements_waste: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WasteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecordedMovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found`, `inventory.event_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.insufficient_stock`, `inventory.waste_exceeds` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_products_list: {
+        parameters: {
+            query?: {
+                /** @description Parte del código o del nombre, sin tildes */
+                text?: string;
+                category?: components["schemas"]["Category"] | null;
+                include_inactive?: boolean;
+                /** @description Solo stock bajo o por vencer */
+                alerts_only?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_products_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.code_taken` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_products_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProductIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.code_taken` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_products_activate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_products_deactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProductOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_movements_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["local_eventos__modules__inventory__presentation__schemas__MovementPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    movements_list: {
+        parameters: {
+            query?: {
+                date_from?: string | null;
+                date_to?: string | null;
+                type?: components["schemas"]["MovementType"] | null;
+                category?: components["schemas"]["MovementCategory"] | null;
+                event_id?: string | null;
+                state?: components["schemas"]["MovementState"] | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["local_eventos__modules__ledger__presentation__movement_schemas__MovementPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    movements_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovementIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["local_eventos__modules__ledger__presentation__movement_schemas__MovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.*` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    movements_void: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                movement_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MovementVoidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["local_eventos__modules__ledger__presentation__movement_schemas__MovementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.already_voided` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `movement.reason_required` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    notes_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                note_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NoteIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NoteOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden`, `note.not_author` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `note.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.notes_closed` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `note.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    payments_receipt_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El comprobante */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    payments_void: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VoidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContractAccountOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.not_voidable`, `payment.already_voided` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payment.reason_required` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_purchases_list: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["PurchaseStatus"] | null;
+                event_id?: string | null;
+                supplier_id?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchasePageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purchasing_purchases_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurchaseRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_purchases_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.purchase_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purchasing_purchases_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.purchase_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.invalid_transition` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_purchases_order: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OrderIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.purchase_not_found`, `purchasing.supplier_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.invalid_transition`, `purchasing.supplier_inactive` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_purchases_receive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReceiveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.purchase_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.invalid_transition` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_shortages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ShortageOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_suppliers_list: {
+        parameters: {
+            query?: {
+                /** @description Parte de la razón social o del documento */
+                text?: string;
+                include_inactive?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purchasing_suppliers_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.document_taken` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_suppliers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                supplier_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.supplier_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purchasing_suppliers_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                supplier_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.supplier_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.document_taken` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_suppliers_activate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                supplier_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.supplier_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    purchasing_suppliers_deactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                supplier_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.supplier_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -4212,6 +9842,541 @@ export interface operations {
             };
             /** @description `quote.invalid_transition`, `quote.expired` */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_cash_flow: {
+        parameters: {
+            query: {
+                from: string;
+                /** @description Hasta 366 días */
+                to: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashFlowOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_event_result: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventResultOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_event_sheet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventSheetOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `event.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_search: {
+        parameters: {
+            query?: {
+                function?: components["schemas"]["WorkerFunction"] | null;
+                /** @description ACTIVE por defecto; ALL incluye ambos */
+                status?: "ACTIVE" | "INACTIVE" | "ALL";
+                /** @description Parte del nombre o del documento */
+                text?: string;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkerCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.document_duplicated` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Dato inválido: `staff.name_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorkerUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.document_duplicated` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Dato inválido: `staff.name_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_activate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkerStatusChange"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_deactivate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["WorkerStatusChange"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkerOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found` */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

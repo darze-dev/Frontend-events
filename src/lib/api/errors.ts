@@ -1,5 +1,6 @@
 // Traduce los errores de la API a mensajes para el usuario.
 // El backend responde con Problem Details: { code, detail, ... }. Se usa `code` porque no cambia.
+import { formatQuantity } from "@/lib/inventory";
 
 const MESSAGES: Record<string, string> = {
   "client.document_duplicated": "Ya existe un cliente con ese documento.",
@@ -62,17 +63,117 @@ const MESSAGES: Record<string, string> = {
   "contract.reason_too_long": "El motivo no puede superar 500 caracteres.",
   "contract.refund_invalid": "La devolución debe ser mayor que cero y no superar el adelanto pagado.",
   "contract.already_cancelled": "El contrato ya está anulado.",
+  "event.not_found": "No se encontró el evento.",
+  "event.activities_closed":
+    "Las actividades solo se registran o marcan con el evento programado, confirmado o en ejecución.",
+  "event.not_editable":
+    "La planificación solo se edita con el evento programado o confirmado.",
+  "event.invalid_transition":
+    "El evento avanza un estado a la vez y no vuelve atrás. Recarga la página: quizá ya cambió.",
+  "event.not_event_day": "El evento solo se pone en ejecución el día del evento.",
+  "event.not_cancellable": "Solo se cancela un evento programado o confirmado.",
+  "event.date_past": "La fecha del evento debe ser hoy o una fecha futura.",
+  "event.time_invalid": "La hora de inicio y la de fin no pueden ser iguales.",
+  "event.guests_invalid": "La cantidad de invitados debe estar entre 1 y 10 000.",
+  "event.venue_required": "El lugar del evento es obligatorio.",
+  "event.venue_too_long": "El lugar no puede superar 300 caracteres.",
+  "event.coordinator_invalid":
+    "El responsable debe ser un usuario activo: administrador o encargado de eventos.",
+  "event.reason_required": "Para cancelar el evento, indica el motivo.",
+  "event.reason_too_long": "El motivo no puede superar 500 caracteres.",
+  "event.notes_closed": "El evento está cancelado: ya no se agregan ni editan observaciones.",
+  "activity.not_found": "No se encontró la actividad.",
+  "activity.validation": "La actividad necesita una descripción de hasta 200 caracteres.",
+  "activity.responsible_invalid":
+    "El responsable debe ser un usuario activo: administrador o encargado de eventos.",
+  "activity.already_done": "La actividad ya estaba completada.",
+  "activity.already_pending": "La actividad ya estaba pendiente.",
+  "note.not_found": "No se encontró la observación.",
+  "note.validation": "La observación necesita un texto de hasta 1000 caracteres.",
+  "note.not_author": "Solo el autor o un administrador puede editar esta observación.",
   "payment.amount_invalid": "El monto del pago debe ser mayor que cero.",
   "payment.date_in_future": "La fecha del pago no puede ser posterior a hoy.",
   "payment.reference_too_long": "La referencia no puede superar 100 caracteres.",
+  "payment.not_found": "No se encontró el pago.",
+  "payment.exceeds_balance": "El pago supera el saldo pendiente del contrato.",
+  "payment.not_voidable": "Solo se anulan pagos parciales. El adelanto se anula anulando el contrato.",
+  "payment.already_voided": "El pago ya está anulado.",
+  "payment.reason_required": "Para anular el pago, indica el motivo.",
+  "payment.reason_too_long": "El motivo no puede superar 500 caracteres.",
+  "contract.not_signed": "Solo se registran pagos en un contrato firmado.",
+  "movement.not_found": "No se encontró el movimiento.",
+  "movement.already_voided": "El movimiento ya está anulado.",
+  "movement.amount_invalid": "El monto debe ser mayor que cero.",
+  "movement.category_invalid": "La categoría no corresponde al tipo de movimiento.",
+  "movement.concept_required": "Indica el concepto.",
+  "movement.concept_too_long": "El concepto no puede superar 200 caracteres.",
+  "movement.date_in_future": "La fecha no puede ser posterior a hoy.",
+  "movement.reference_too_long": "La referencia no puede superar 100 caracteres.",
+  "movement.reason_required": "Para anular el movimiento, indica el motivo.",
+  "movement.reason_too_long": "El motivo no puede superar 500 caracteres.",
+  "inventory.validation": "Revisa los datos del producto o del movimiento.",
+  "inventory.code_taken": "Ya existe un producto con ese código.",
+  "inventory.product_not_found": "No se encontró el producto.",
+  "inventory.product_inactive": "El producto está desactivado: actívalo para registrar entradas o salidas.",
+  "inventory.event_not_found": "No se encontró el evento.",
+  "inventory.event_not_assignable": "Solo salen materiales para un evento programado, confirmado o en ejecución.",
+  "inventory.insufficient_stock": "No hay stock suficiente para esa cantidad.",
+  "inventory.return_exceeds": "No se puede devolver más de lo que salió para el evento y aún no volvió.",
+  "inventory.waste_exceeds": "La merma del evento no puede superar lo que salió y no volvió.",
+  "purchasing.validation": "Revisa los datos del proveedor o de la compra.",
+  "purchasing.document_taken": "Ya existe un proveedor con ese documento.",
+  "purchasing.supplier_not_found": "No se encontró el proveedor.",
+  "purchasing.supplier_inactive": "El proveedor está desactivado: actívalo o elige otro para ordenar.",
+  "purchasing.purchase_not_found": "No se encontró la compra.",
+  "purchasing.invalid_transition":
+    "La compra ya cambió de estado: una compra recibida o cancelada no se modifica. Recarga la página.",
+  "staff.document_duplicated": "Ya existe un trabajador, activo o desactivado, con ese documento.",
+  "staff.document_invalid":
+    "El documento no es válido: el DNI tiene 8 dígitos y el carné de extranjería, de 9 a 12.",
+  "staff.name_required": "El nombre del trabajador es obligatorio.",
+  "staff.name_too_long": "El nombre no puede superar 150 caracteres.",
+  "staff.phone_invalid": "El teléfono solo admite dígitos.",
+  "staff.function_description_required": "Con la función «Otro», describe la función real.",
+  "staff.function_description_too_long": "La descripción de la función no puede superar 120 caracteres.",
+  "staff.function_description_not_allowed": "Solo la función «Otro» lleva descripción.",
+  "staff.rate_invalid": "La tarifa debe ser un monto en soles de cero o más.",
+  "staff.overtime_rate_required": "Si aplica hora extra, indica el monto por hora extra.",
+  "staff.overtime_rate_invalid": "El monto por hora extra debe ser mayor que cero.",
+  "staff.overtime_rate_not_allowed": "Si no aplica hora extra, no corresponde un monto.",
+  "staff.audit_reason_not_allowed": "Esta operación no admite motivo.",
+  "staff.audit_invalid": "No se pudo registrar la auditoría del cambio.",
+  "staff.not_found": "No se encontró el trabajador.",
+  "report.range_invalid": "El rango de fechas no es válido: la fecha final no puede ser anterior a la inicial y el rango no supera 366 días.",
   "auth.invalid_credentials": "Correo o contraseña incorrectos, o la cuenta está desactivada.",
   "auth.forbidden": "Tu rol no tiene permiso para esta operación.",
   "auth.session_expired": "Tu sesión terminó. Vuelve a iniciar sesión.",
 };
 
+// Códigos cuyo `detail` trae un dato útil (p. ej., el saldo pendiente): se muestra ese texto.
+// También los de validación del almacén y las compras, cuyo `detail` dice qué dato corregir.
+const DETAIL_FIRST = new Set([
+  "payment.exceeds_balance",
+  "inventory.validation",
+  "inventory.return_exceeds",
+  "inventory.waste_exceeds",
+  "purchasing.validation",
+  // CA-15.3: el detalle identifica el documento repetido ("… con DNI 12345678.").
+  "staff.document_duplicated",
+]);
+
+// RN20: el backend informa el disponible en `detail` ("… solo hay 3.000 disponible.").
+function insufficientStock(detail: string | undefined): string {
+  const available = detail?.match(/-?\d+(?:\.\d+)?/)?.[0];
+  return available
+    ? `No hay stock suficiente: solo hay ${formatQuantity(available)} disponible.`
+    : MESSAGES["inventory.insufficient_stock"];
+}
+
 export function errorMessage(error: unknown): string {
   if (typeof error === "object" && error !== null && "code" in error) {
     const { code, detail } = error as { code: string; detail?: string };
+    if (code === "inventory.insufficient_stock") return insufficientStock(detail);
+    if (DETAIL_FIRST.has(code) && detail) return detail;
     return MESSAGES[code] ?? detail ?? "No se pudo completar la operación.";
   }
   return "No se pudo conectar con el servidor. ¿Está encendida la API?";

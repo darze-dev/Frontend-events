@@ -2,15 +2,22 @@
 
 // Detalle del evento (HU10): datos copiados del contrato, servicios contratados, responsable y
 // enlaces al contrato y la cotización. "Cancelar evento" anula también el contrato (HU11, R-EVT-4).
-// Editar la planificación llega con el resto de HU11.
+// HU11: stepper de estados con el siguiente paso, "Editar planificación" (programado o confirmado)
+// y la pestaña "Historial" de cambios. La pestaña "Seguimiento" tiene actividades
+// y bitácora de observaciones (HU13). En "Resumen", con `payments:record`, la tarjeta "Cuenta"
+// del contrato del evento (HU19); con `finance:read`, el "Resultado económico" (HU22).
+// Con `inventory:read`, la pestaña "Materiales": salió, volvió, merma y falta devolver (HU26).
+// HU14: botón "Ficha" a la ficha consolidada; `?pestana=` abre una pestaña (enlaces de la ficha).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
 
 import { useAuth } from "@/components/auth-provider";
+import { AccountCard } from "@/components/finance/account-card";
+import { EventResultCard } from "@/components/finance/event-result-card";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
-import { secondaryButton } from "@/components/ui/styles";
+import { primaryButton, secondaryButton } from "@/components/ui/styles";
 import { api, type Event } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import { formatSchedule } from "@/lib/events";
@@ -19,15 +26,35 @@ import { EVENT_TYPE_LABELS, formatDate } from "@/lib/quotes";
 
 import { EventStatusBadge } from "../event-status-badge";
 import { CancelEventForm } from "./cancel-event-form";
+import { EventFollowUp } from "./event-follow-up";
+import { EventHistory } from "./event-history";
+import { EventMaterials } from "./event-materials";
+import { EventStepper } from "./event-stepper";
+import { PlanningForm } from "./planning-form";
+
+const ALL_TABS = [
+  { id: "resumen", label: "Resumen" },
+  { id: "seguimiento", label: "Seguimiento" },
+  { id: "materiales", label: "Materiales" }, // con `inventory:read` (CA-26.6)
+  { id: "historial", label: "Historial" }, // CA-11.5
+] as const;
+type Tab = (typeof ALL_TABS)[number]["id"];
 
 export function EventDetail() {
   const { id } = useParams<{ id: string }>();
-  const justCreated = useSearchParams().get("nuevo") === "1";
+  const searchParams = useSearchParams();
+  const justCreated = searchParams.get("nuevo") === "1";
   const { can } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(justCreated ? "Evento creado: quedó programado." : null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [planning, setPlanning] = useState(false);
+  const tabs = ALL_TABS.filter((t) => t.id !== "materiales" || can("inventory:read"));
+  const requested = tabs.find((t) => t.id === searchParams.get("pestana"))?.id;
+  const [tab, setTab] = useState<Tab>(requested ?? "resumen");
+  const [moneyVersion, setMoneyVersion] = useState(0); // cambia al pagar o anular: refresca el resultado
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/events/{event_id}", {
@@ -43,7 +70,22 @@ export function EventDetail() {
   }, [load]);
 
   // Next guarda esta pantalla oculta al salir de ella: el aviso no debe reaparecer al volver.
-  useEffect(() => () => setNotice(null), []);
+  useEffect(
+    () => () => {
+      setNotice(null);
+      setWarning(null);
+    },
+    [],
+  );
+
+  // Pestañas accesibles: flechas izquierda/derecha mueven la selección y el foco.
+  function onTabKey(keyEvent: KeyboardEvent<HTMLButtonElement>) {
+    if (keyEvent.key !== "ArrowRight" && keyEvent.key !== "ArrowLeft") return;
+    const index = tabs.findIndex((t) => t.id === tab);
+    const next = tabs[(index + (keyEvent.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length].id;
+    setTab(next);
+    document.getElementById(`tab-${next}`)?.focus();
+  }
 
   if (!event) {
     return error ? <ErrorAlert message={error} /> : <p className="py-10 text-center text-sm text-muted">Cargando…</p>;
@@ -54,6 +96,8 @@ export function EventDetail() {
     (event.status === "SCHEDULED" || event.status === "CONFIRMED") &&
     can("events:manage") &&
     can("payments:record");
+  // R-EVT-6: la planificación se edita en programado o confirmado.
+  const editable = (event.status === "SCHEDULED" || event.status === "CONFIRMED") && can("events:manage");
 
   const facts: [string, string][] = [
     ["Cliente", event.client_name],
@@ -92,22 +136,93 @@ export function EventDetail() {
               {reference(event.quote_code, `/cotizaciones/${event.quote_id}`, can("quotes:manage"))}
             </p>
           </div>
-          {cancellable && (
-            <button type="button" onClick={() => setCancelling(true)} className={`${secondaryButton} hover:text-danger`}>
-              <Icon name="close" className="size-4" />
-              Cancelar evento
-            </button>
-          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link href={`/eventos/${event.id}/ficha`} className={secondaryButton}>
+              <Icon name="file" className="size-4" />
+              Ficha
+            </Link>
+            {editable && (
+              <button type="button" onClick={() => setPlanning(true)} className={primaryButton}>
+                <Icon name="pencil" className="size-4" />
+                Editar planificación
+              </button>
+            )}
+            {cancellable && (
+              <button type="button" onClick={() => setCancelling(true)} className={`${secondaryButton} hover:text-danger`}>
+                <Icon name="close" className="size-4" />
+                Cancelar evento
+              </button>
+            )}
+          </div>
         </div>
+        <EventStepper
+          event={event}
+          onChanged={(updated, message) => {
+            setEvent(updated);
+            setWarning(null);
+            setNotice(message);
+          }}
+        />
         {notice && (
           <div role="status" className="flex items-center gap-2 rounded-lg bg-success/10 p-3 text-sm text-success">
             <Icon name="check" className="size-4 shrink-0" />
             {notice}
           </div>
         )}
+        {warning && (
+          <div role="alert" className="flex items-center gap-2 rounded-lg bg-warning/10 p-3 text-sm text-warning">
+            <Icon name="alert" className="size-4 shrink-0" />
+            {warning}
+          </div>
+        )}
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+      <div role="tablist" aria-label="Secciones del evento" className="flex gap-1 border-b border-line">
+        {tabs.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            id={`tab-${t.id}`}
+            aria-selected={tab === t.id}
+            aria-controls={`panel-${t.id}`}
+            tabIndex={tab === t.id ? 0 : -1}
+            onClick={() => setTab(t.id)}
+            onKeyDown={onTabKey}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition ${
+              tab === t.id ? "border-primary text-primary" : "border-transparent text-muted hover:text-fg"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "materiales" && (
+        <div role="tabpanel" id="panel-materiales" aria-labelledby="tab-materiales">
+          <EventMaterials event={event} />
+        </div>
+      )}
+
+      {tab === "historial" && (
+        <div role="tabpanel" id="panel-historial" aria-labelledby="tab-historial">
+          <EventHistory event={event} />
+        </div>
+      )}
+
+      {tab === "seguimiento" && (
+        <div role="tabpanel" id="panel-seguimiento" aria-labelledby="tab-seguimiento">
+          <EventFollowUp event={event} />
+        </div>
+      )}
+
+      <div
+        role="tabpanel"
+        id="panel-resumen"
+        aria-labelledby="tab-resumen"
+        hidden={tab !== "resumen"}
+        className="grid gap-6 lg:grid-cols-[1fr_20rem]"
+      >
         <div className="space-y-6">
           <section className="rounded-xl border border-line bg-surface p-5">
             <h2 className="mb-4 font-semibold">Datos del evento</h2>
@@ -138,6 +253,18 @@ export function EventDetail() {
             </ul>
             <p className="mt-3 text-xs text-muted">Copiados del contrato al crear el evento.</p>
           </section>
+
+          {can("payments:record") && (
+            <AccountCard
+              key={`${event.contract_id}-${event.status}`}
+              contractId={event.contract_id}
+              onChanged={() => {
+                setMoneyVersion((n) => n + 1);
+                void load();
+              }}
+            />
+          )}
+          {can("finance:read") && <EventResultCard key={`${event.status}-${moneyVersion}`} eventId={event.id} />}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -159,6 +286,23 @@ export function EventDetail() {
         </aside>
       </div>
 
+      {planning && (
+        <PlanningForm
+          event={event}
+          onClose={() => setPlanning(false)}
+          onSaved={({ warnings, ...updated }) => {
+            setEvent(updated);
+            setPlanning(false);
+            setNotice("Planificación actualizada.");
+            setWarning(
+              warnings.includes("staff_may_need_review")
+                ? "Revisa el personal asignado: cambió la fecha u horario."
+                : null,
+            );
+          }}
+        />
+      )}
+
       {cancelling && (
         <CancelEventForm
           event={event}
@@ -166,6 +310,7 @@ export function EventDetail() {
           onSaved={(updated) => {
             setEvent(updated);
             setCancelling(false);
+            setWarning(null);
             setNotice("Evento cancelado y contrato anulado.");
           }}
         />

@@ -32,7 +32,25 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
   },
   {
     title: "Operaciones",
-    items: [{ href: "/eventos", label: "Eventos", icon: "calendar", permission: "events:read" }],
+    items: [
+      { href: "/eventos", label: "Eventos", icon: "calendar", permission: "events:read" },
+      { href: "/almacen", label: "Almacén", icon: "box", permission: "inventory:read" },
+      { href: "/personal", label: "Personal", icon: "idCard", permission: "staff:manage" },
+    ],
+  },
+  {
+    title: "Compras",
+    items: [
+      { href: "/compras", label: "Compras", icon: "cart", permission: "purchasing:manage" },
+      { href: "/proveedores", label: "Proveedores", icon: "truck", permission: "purchasing:manage" },
+    ],
+  },
+  {
+    title: "Finanzas",
+    items: [
+      { href: "/caja", label: "Caja", icon: "wallet", permission: "payments:record" },
+      { href: "/flujo-de-caja", label: "Flujo de caja", icon: "chart", permission: "finance:read" },
+    ],
   },
   {
     title: "Administración",
@@ -91,7 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       {/* Menú lateral: tablet y computadora */}
       <aside
-        className={`sticky top-0 hidden h-screen shrink-0 flex-col bg-sidebar md:flex ${
+        className={`sticky top-0 hidden h-screen shrink-0 flex-col bg-sidebar md:flex print:hidden ${
           collapsed ? "md:w-20" : "md:w-20 lg:w-64"
         }`}
       >
@@ -117,7 +135,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {/* Menú lateral: celular (panel que se abre encima) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-40 md:hidden print:hidden">
           <button
             type="button"
             aria-label="Cerrar menú"
@@ -142,7 +160,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-surface px-4 md:px-6">
+        <header className="sticky top-0 z-30 flex h-16 print:hidden items-center gap-3 border-b border-line bg-surface px-4 md:px-6">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -167,7 +185,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Icon name="logout" />
           </button>
         </header>
-        <main className="mx-auto w-full max-w-7xl flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+        <main className="mx-auto w-full max-w-7xl flex-1 p-4 md:p-6 lg:p-8 print:max-w-none print:p-0">{children}</main>
       </div>
     </div>
   );

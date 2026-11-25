@@ -62,3 +62,43 @@ body {
   background: var(--app);
   color: var(--fg);
 }
+
+/*
+ * Impresión (ficha del evento, HU14): sin menú ni botones (clases print:hidden), fondo blanco
+ * aunque esté el modo oscuro y tarjetas que no se cortan entre páginas (break-inside-avoid).
+ */
+@media print {
+  :root,
+  [data-theme="dark"] {
+    --app: #ffffff;
+    --surface: #ffffff;
+    --surface-muted: #f1f5f9;
+    --line: #cbd5e1;
+    --fg: #0f172a;
+    --muted: #475569;
+    --primary: #1d4ed8;
+    --primary-soft: #dbeafe;
+    color-scheme: light;
+  }
+
+  @page {
+    margin: 1.5cm;
+  }
+
+  body {
+    background: #ffffff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  section,
+  tr,
+  li {
+    break-inside: avoid;
+  }
+
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+}
