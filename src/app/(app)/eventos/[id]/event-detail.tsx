@@ -7,6 +7,7 @@
 // y bitácora de observaciones (HU13). En "Resumen", con `payments:record`, la tarjeta "Cuenta"
 // del contrato del evento (HU19); con `finance:read`, el "Resultado económico" (HU22).
 // Con `inventory:read`, la pestaña "Materiales": salió, volvió, merma y falta devolver (HU26).
+// HU14: botón "Ficha" a la ficha consolidada; `?pestana=` abre una pestaña (enlaces de la ficha).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
@@ -41,7 +42,8 @@ type Tab = (typeof ALL_TABS)[number]["id"];
 
 export function EventDetail() {
   const { id } = useParams<{ id: string }>();
-  const justCreated = useSearchParams().get("nuevo") === "1";
+  const searchParams = useSearchParams();
+  const justCreated = searchParams.get("nuevo") === "1";
   const { can } = useAuth();
   const [event, setEvent] = useState<Event | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,9 +51,10 @@ export function EventDetail() {
   const [warning, setWarning] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [planning, setPlanning] = useState(false);
-  const [tab, setTab] = useState<Tab>("resumen");
-  const [moneyVersion, setMoneyVersion] = useState(0); // cambia al pagar o anular: refresca el resultado
   const tabs = ALL_TABS.filter((t) => t.id !== "materiales" || can("inventory:read"));
+  const requested = tabs.find((t) => t.id === searchParams.get("pestana"))?.id;
+  const [tab, setTab] = useState<Tab>(requested ?? "resumen");
+  const [moneyVersion, setMoneyVersion] = useState(0); // cambia al pagar o anular: refresca el resultado
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/events/{event_id}", {
@@ -134,6 +137,10 @@ export function EventDetail() {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
+            <Link href={`/eventos/${event.id}/ficha`} className={secondaryButton}>
+              <Icon name="file" className="size-4" />
+              Ficha
+            </Link>
             {editable && (
               <button type="button" onClick={() => setPlanning(true)} className={primaryButton}>
                 <Icon name="pencil" className="size-4" />
