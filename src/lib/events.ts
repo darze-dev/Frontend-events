@@ -71,3 +71,19 @@ const limaDateTime = new Intl.DateTimeFormat("es-PE", {
 export function formatDateTimeLima(iso: string): string {
   return limaDateTime.format(new Date(iso));
 }
+
+const limaTime = new Intl.DateTimeFormat("es-PE", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+  timeZone: "America/Lima",
+});
+const limaDay = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Lima" });
+
+// Turno de un registro con inicio y fin (UTC en la API) en hora de Lima: "18:00 – 02:00 (día siguiente)".
+export function formatShiftLima(startsAt: string, endsAt: string): string {
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  const nextDay = limaDay.format(end) !== limaDay.format(start) ? " (día siguiente)" : "";
+  return `${limaTime.format(start)} – ${limaTime.format(end)}${nextDay}`;
+}

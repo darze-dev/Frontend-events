@@ -4,7 +4,7 @@
 // (R-INV-5): un error se corrige con un ajuste.
 // - Entrada: cantidad, costo unitario en soles, proveedor opcional (solo con `purchasing:manage`,
 //   que es quien ve la lista de proveedores), lote y vencimiento opcionales (CA-23.2).
-// - Salida / Devolución: evento (programado, confirmado o en curso) y cantidad (CA-26.1, CA-26.3).
+// - Salida / Devolución: evento (programado, confirmado o en ejecución) y cantidad (CA-26.1, CA-26.3).
 // - Merma: cantidad y motivo; evento opcional (CA-26.4).
 // - Ajuste: signo, cantidad y motivo.
 import { useEffect, useState, type FormEvent } from "react";
@@ -173,7 +173,7 @@ export function StockMovementForm({ kind, product, event = null, lockEvent = fal
             )}
             {kind === "EXIT" && (
               <span className="mt-1 block text-xs font-normal text-muted">
-                Solo para eventos programados, confirmados o en curso.
+                Solo para eventos programados, confirmados o en ejecución.
               </span>
             )}
             {kind === "WASTE" && (
