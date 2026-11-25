@@ -49,7 +49,8 @@ export function formatDateTime(iso: string): string {
 
 const monthName = new Intl.DateTimeFormat("es-PE", { month: "long", year: "numeric", timeZone: "UTC" });
 
-// "2026-11" → "noviembre de 2026"
+// "2026-11" → "Noviembre de 2026" (solo la primera letra en mayúscula)
 export function formatMonth(month: string): string {
-  return monthName.format(new Date(`${month}-01T00:00:00Z`));
+  const text = monthName.format(new Date(`${month}-01T00:00:00Z`));
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
