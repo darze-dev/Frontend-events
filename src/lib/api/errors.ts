@@ -1,5 +1,6 @@
 // Traduce los errores de la API a mensajes para el usuario.
 // El backend responde con Problem Details: { code, detail, ... }. Se usa `code` porque no cambia.
+import { formatQuantity } from "@/lib/inventory";
 
 const MESSAGES: Record<string, string> = {
   "client.document_duplicated": "Ya existe un cliente con ese documento.",
@@ -95,6 +96,22 @@ const MESSAGES: Record<string, string> = {
   "movement.reference_too_long": "La referencia no puede superar 100 caracteres.",
   "movement.reason_required": "Para anular el movimiento, indica el motivo.",
   "movement.reason_too_long": "El motivo no puede superar 500 caracteres.",
+  "inventory.validation": "Revisa los datos del producto o del movimiento.",
+  "inventory.code_taken": "Ya existe un producto con ese código.",
+  "inventory.product_not_found": "No se encontró el producto.",
+  "inventory.product_inactive": "El producto está desactivado: actívalo para registrar entradas o salidas.",
+  "inventory.event_not_found": "No se encontró el evento.",
+  "inventory.event_not_assignable": "Solo salen materiales para un evento programado, confirmado o en curso.",
+  "inventory.insufficient_stock": "No hay stock suficiente para esa cantidad.",
+  "inventory.return_exceeds": "No se puede devolver más de lo que salió para el evento y aún no volvió.",
+  "inventory.waste_exceeds": "La merma del evento no puede superar lo que salió y no volvió.",
+  "purchasing.validation": "Revisa los datos del proveedor o de la compra.",
+  "purchasing.document_taken": "Ya existe un proveedor con ese documento.",
+  "purchasing.supplier_not_found": "No se encontró el proveedor.",
+  "purchasing.supplier_inactive": "El proveedor está desactivado: actívalo o elige otro para ordenar.",
+  "purchasing.purchase_not_found": "No se encontró la compra.",
+  "purchasing.invalid_transition":
+    "La compra ya cambió de estado: una compra recibida o cancelada no se modifica. Recarga la página.",
   "report.range_invalid": "El rango de fechas no es válido: la fecha final no puede ser anterior a la inicial y el rango no supera 366 días.",
   "auth.invalid_credentials": "Correo o contraseña incorrectos, o la cuenta está desactivada.",
   "auth.forbidden": "Tu rol no tiene permiso para esta operación.",
@@ -102,11 +119,27 @@ const MESSAGES: Record<string, string> = {
 };
 
 // Códigos cuyo `detail` trae un dato útil (p. ej., el saldo pendiente): se muestra ese texto.
-const DETAIL_FIRST = new Set(["payment.exceeds_balance"]);
+// También los de validación del almacén y las compras, cuyo `detail` dice qué dato corregir.
+const DETAIL_FIRST = new Set([
+  "payment.exceeds_balance",
+  "inventory.validation",
+  "inventory.return_exceeds",
+  "inventory.waste_exceeds",
+  "purchasing.validation",
+]);
+
+// RN20: el backend informa el disponible en `detail` ("… solo hay 3.000 disponible.").
+function insufficientStock(detail: string | undefined): string {
+  const available = detail?.match(/-?\d+(?:\.\d+)?/)?.[0];
+  return available
+    ? `No hay stock suficiente: solo hay ${formatQuantity(available)} disponible.`
+    : MESSAGES["inventory.insufficient_stock"];
+}
 
 export function errorMessage(error: unknown): string {
   if (typeof error === "object" && error !== null && "code" in error) {
     const { code, detail } = error as { code: string; detail?: string };
+    if (code === "inventory.insufficient_stock") return insufficientStock(detail);
     if (DETAIL_FIRST.has(code) && detail) return detail;
     return MESSAGES[code] ?? detail ?? "No se pudo completar la operación.";
   }

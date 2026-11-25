@@ -5,6 +5,7 @@
 // Editar la planificación llega con el resto de HU11. La pestaña "Seguimiento" tiene actividades
 // y bitácora de observaciones (HU13). En "Resumen", con `payments:record`, la tarjeta "Cuenta"
 // del contrato del evento (HU19); con `finance:read`, el "Resultado económico" (HU22).
+// Con `inventory:read`, la pestaña "Materiales": salió, volvió, merma y falta devolver (HU26).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type KeyboardEvent } from "react";
@@ -24,12 +25,14 @@ import { EVENT_TYPE_LABELS, formatDate } from "@/lib/quotes";
 import { EventStatusBadge } from "../event-status-badge";
 import { CancelEventForm } from "./cancel-event-form";
 import { EventFollowUp } from "./event-follow-up";
+import { EventMaterials } from "./event-materials";
 
-const TABS = [
+const ALL_TABS = [
   { id: "resumen", label: "Resumen" },
   { id: "seguimiento", label: "Seguimiento" },
+  { id: "materiales", label: "Materiales" }, // con `inventory:read` (CA-26.6)
 ] as const;
-type Tab = (typeof TABS)[number]["id"];
+type Tab = (typeof ALL_TABS)[number]["id"];
 
 export function EventDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,6 +44,7 @@ export function EventDetail() {
   const [cancelling, setCancelling] = useState(false);
   const [tab, setTab] = useState<Tab>("resumen");
   const [moneyVersion, setMoneyVersion] = useState(0); // cambia al pagar o anular: refresca el resultado
+  const tabs = ALL_TABS.filter((t) => t.id !== "materiales" || can("inventory:read"));
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/events/{event_id}", {
@@ -61,8 +65,8 @@ export function EventDetail() {
   // Pestañas accesibles: flechas izquierda/derecha mueven la selección y el foco.
   function onTabKey(keyEvent: KeyboardEvent<HTMLButtonElement>) {
     if (keyEvent.key !== "ArrowRight" && keyEvent.key !== "ArrowLeft") return;
-    const index = TABS.findIndex((t) => t.id === tab);
-    const next = TABS[(index + (keyEvent.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length].id;
+    const index = tabs.findIndex((t) => t.id === tab);
+    const next = tabs[(index + (keyEvent.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length].id;
     setTab(next);
     document.getElementById(`tab-${next}`)?.focus();
   }
@@ -130,7 +134,7 @@ export function EventDetail() {
       </header>
 
       <div role="tablist" aria-label="Secciones del evento" className="flex gap-1 border-b border-line">
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <button
             key={t.id}
             type="button"
@@ -149,6 +153,12 @@ export function EventDetail() {
           </button>
         ))}
       </div>
+
+      {tab === "materiales" && (
+        <div role="tabpanel" id="panel-materiales" aria-labelledby="tab-materiales">
+          <EventMaterials event={event} />
+        </div>
+      )}
 
       {tab === "seguimiento" && (
         <div role="tabpanel" id="panel-seguimiento" aria-labelledby="tab-seguimiento">
