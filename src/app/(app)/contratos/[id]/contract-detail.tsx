@@ -4,17 +4,20 @@
 // Pendiente de firma → "Registrar firma y adelanto" (un solo paso, R-CON-1).
 // Pendiente o firmado → "Anular", con motivo y devolución opcional (R-CON-3).
 // Firmado → "Convertir en evento" (HU10); si ya es evento, "Ver evento" y no se anula (R-EVT-3).
+// Con `payments:record`, la tarjeta "Cuenta" reemplaza la lista simple de pagos (HU19–HU20).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { useAuth } from "@/components/auth-provider";
+import { AccountCard } from "@/components/finance/account-card";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
 import { primaryButton, secondaryButton } from "@/components/ui/styles";
 import { api, type Contract } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import { PAYMENT_METHODS } from "@/lib/contracts";
+import { PAYMENT_KINDS } from "@/lib/finance";
 import { formatSoles } from "@/lib/money";
 import { formatDate } from "@/lib/quotes";
 
@@ -64,9 +67,12 @@ export function ContractDetail() {
     ["Fecha del evento", formatDate(contract.event_date)],
     ["Total", formatSoles(contract.total_cents)],
     ["Adelanto pactado", formatSoles(contract.advance_cents)],
-    ["Saldo", contract.balance_cents == null ? "—" : formatSoles(contract.balance_cents)],
-    ["Pagar el saldo hasta", formatDate(contract.balance_due_date)],
   ];
+  // En un contrato anulado no hay saldo por cobrar (el backend lo envía vacío).
+  if (contract.status !== "CANCELLED" && contract.balance_cents != null) {
+    facts.push(["Saldo", formatSoles(contract.balance_cents)]);
+    facts.push(["Pagar el saldo hasta", formatDate(contract.balance_due_date)]);
+  }
 
   return (
     <div className="space-y-6">
@@ -154,32 +160,37 @@ export function ContractDetail() {
             </p>
           </section>
 
-          <section className="rounded-xl border border-line bg-surface p-5">
-            <h2 className="mb-3 font-semibold">Pagos</h2>
-            {contract.payments.length === 0 ? (
-              <p className="text-sm text-muted">Todavía no hay pagos. El adelanto se registra junto con la firma.</p>
-            ) : (
-              <ul className="divide-y divide-line">
-                {contract.payments.map((payment) => (
-                  <li key={payment.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
-                    <span>
-                      <span className="block font-medium">
-                        {payment.kind === "ADVANCE" ? "Adelanto" : "Devolución"}
+          {can("payments:record") ? (
+            // Se vuelve a montar al firmar o anular, para leer la cuenta actualizada.
+            <AccountCard key={contract.status} contractId={contract.id} onChanged={() => void load()} />
+          ) : (
+            <section className="rounded-xl border border-line bg-surface p-5">
+              <h2 className="mb-3 font-semibold">Pagos</h2>
+              {contract.payments.length === 0 ? (
+                <p className="text-sm text-muted">Todavía no hay pagos. El adelanto se registra junto con la firma.</p>
+              ) : (
+                <ul className="divide-y divide-line">
+                  {contract.payments.map((payment) => (
+                    <li key={payment.id} className="flex items-center justify-between gap-3 py-2.5 text-sm">
+                      <span>
+                        <span className="block font-medium">
+                          {PAYMENT_KINDS[payment.kind]}
+                        </span>
+                        <span className="block text-xs text-muted">
+                          {formatDate(payment.paid_on)} · {PAYMENT_METHODS[payment.method]}
+                          {payment.reference ? ` · ${payment.reference}` : ""}
+                        </span>
                       </span>
-                      <span className="block text-xs text-muted">
-                        {formatDate(payment.paid_on)} · {PAYMENT_METHODS[payment.method]}
-                        {payment.reference ? ` · ${payment.reference}` : ""}
+                      <span className={`font-medium tabular-nums ${payment.kind === "REFUND" ? "text-danger" : ""}`}>
+                        {payment.kind === "REFUND" ? "− " : ""}
+                        {formatSoles(payment.amount_cents)}
                       </span>
-                    </span>
-                    <span className={`font-medium tabular-nums ${payment.kind === "REFUND" ? "text-danger" : ""}`}>
-                      {payment.kind === "REFUND" ? "− " : ""}
-                      {formatSoles(payment.amount_cents)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
