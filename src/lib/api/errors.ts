@@ -66,6 +66,21 @@ const MESSAGES: Record<string, string> = {
   "event.not_found": "No se encontró el evento.",
   "event.activities_closed":
     "Las actividades solo se registran o marcan con el evento programado, confirmado o en curso.",
+  "event.not_editable":
+    "La planificación solo se edita con el evento programado o confirmado.",
+  "event.invalid_transition":
+    "El evento avanza un estado a la vez y no vuelve atrás. Recarga la página: quizá ya cambió.",
+  "event.not_event_day": "El evento solo se pone en ejecución el día del evento.",
+  "event.not_cancellable": "Solo se cancela un evento programado o confirmado.",
+  "event.date_past": "La fecha del evento debe ser hoy o una fecha futura.",
+  "event.time_invalid": "La hora de inicio y la de fin no pueden ser iguales.",
+  "event.guests_invalid": "La cantidad de invitados debe estar entre 1 y 10 000.",
+  "event.venue_required": "El lugar del evento es obligatorio.",
+  "event.venue_too_long": "El lugar no puede superar 300 caracteres.",
+  "event.coordinator_invalid":
+    "El responsable debe ser un usuario activo: administrador o encargado de eventos.",
+  "event.reason_required": "Para cancelar el evento, indica el motivo.",
+  "event.reason_too_long": "El motivo no puede superar 500 caracteres.",
   "event.notes_closed": "El evento está cancelado: ya no se agregan ni editan observaciones.",
   "activity.not_found": "No se encontró la actividad.",
   "activity.validation": "La actividad necesita una descripción de hasta 200 caracteres.",

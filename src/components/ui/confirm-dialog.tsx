@@ -4,7 +4,7 @@
 import { useState } from "react";
 
 import { Modal } from "./modal";
-import { dangerButton, secondaryButton } from "./styles";
+import { dangerButton, primaryButton, secondaryButton } from "./styles";
 
 type Props = {
   title: string;
@@ -12,9 +12,10 @@ type Props = {
   confirmLabel: string;
   onConfirm: () => Promise<void>;
   onClose: () => void;
+  tone?: "danger" | "primary"; // "primary" para avanzar (confirmar un evento…), no para borrar
 };
 
-export function ConfirmDialog({ title, message, confirmLabel, onConfirm, onClose }: Props) {
+export function ConfirmDialog({ title, message, confirmLabel, onConfirm, onClose, tone = "danger" }: Props) {
   const [working, setWorking] = useState(false);
 
   async function confirm() {
@@ -30,7 +31,7 @@ export function ConfirmDialog({ title, message, confirmLabel, onConfirm, onClose
         <button type="button" onClick={onClose} className={secondaryButton}>
           Cancelar
         </button>
-        <button type="button" onClick={() => void confirm()} disabled={working} className={dangerButton}>
+        <button type="button" onClick={() => void confirm()} disabled={working} className={tone === "danger" ? dangerButton : primaryButton}>
           {working ? "Procesando…" : confirmLabel}
         </button>
       </div>

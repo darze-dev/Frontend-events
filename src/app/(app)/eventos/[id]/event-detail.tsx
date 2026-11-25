@@ -2,7 +2,8 @@
 
 // Detalle del evento (HU10): datos copiados del contrato, servicios contratados, responsable y
 // enlaces al contrato y la cotización. "Cancelar evento" anula también el contrato (HU11, R-EVT-4).
-// Editar la planificación llega con el resto de HU11. La pestaña "Seguimiento" tiene actividades
+// HU11: stepper de estados con el siguiente paso, "Editar planificación" (programado o confirmado)
+// y la pestaña "Historial" de cambios. La pestaña "Seguimiento" tiene actividades
 // y bitácora de observaciones (HU13). En "Resumen", con `payments:record`, la tarjeta "Cuenta"
 // del contrato del evento (HU19); con `finance:read`, el "Resultado económico" (HU22).
 // Con `inventory:read`, la pestaña "Materiales": salió, volvió, merma y falta devolver (HU26).
@@ -15,7 +16,7 @@ import { AccountCard } from "@/components/finance/account-card";
 import { EventResultCard } from "@/components/finance/event-result-card";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
-import { secondaryButton } from "@/components/ui/styles";
+import { primaryButton, secondaryButton } from "@/components/ui/styles";
 import { api, type Event } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import { formatSchedule } from "@/lib/events";
@@ -25,12 +26,16 @@ import { EVENT_TYPE_LABELS, formatDate } from "@/lib/quotes";
 import { EventStatusBadge } from "../event-status-badge";
 import { CancelEventForm } from "./cancel-event-form";
 import { EventFollowUp } from "./event-follow-up";
+import { EventHistory } from "./event-history";
 import { EventMaterials } from "./event-materials";
+import { EventStepper } from "./event-stepper";
+import { PlanningForm } from "./planning-form";
 
 const ALL_TABS = [
   { id: "resumen", label: "Resumen" },
   { id: "seguimiento", label: "Seguimiento" },
   { id: "materiales", label: "Materiales" }, // con `inventory:read` (CA-26.6)
+  { id: "historial", label: "Historial" }, // CA-11.5
 ] as const;
 type Tab = (typeof ALL_TABS)[number]["id"];
 
@@ -41,7 +46,9 @@ export function EventDetail() {
   const [event, setEvent] = useState<Event | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(justCreated ? "Evento creado: quedó programado." : null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [planning, setPlanning] = useState(false);
   const [tab, setTab] = useState<Tab>("resumen");
   const [moneyVersion, setMoneyVersion] = useState(0); // cambia al pagar o anular: refresca el resultado
   const tabs = ALL_TABS.filter((t) => t.id !== "materiales" || can("inventory:read"));
@@ -60,7 +67,13 @@ export function EventDetail() {
   }, [load]);
 
   // Next guarda esta pantalla oculta al salir de ella: el aviso no debe reaparecer al volver.
-  useEffect(() => () => setNotice(null), []);
+  useEffect(
+    () => () => {
+      setNotice(null);
+      setWarning(null);
+    },
+    [],
+  );
 
   // Pestañas accesibles: flechas izquierda/derecha mueven la selección y el foco.
   function onTabKey(keyEvent: KeyboardEvent<HTMLButtonElement>) {
@@ -80,6 +93,8 @@ export function EventDetail() {
     (event.status === "SCHEDULED" || event.status === "CONFIRMED") &&
     can("events:manage") &&
     can("payments:record");
+  // R-EVT-6: la planificación se edita en programado o confirmado.
+  const editable = (event.status === "SCHEDULED" || event.status === "CONFIRMED") && can("events:manage");
 
   const facts: [string, string][] = [
     ["Cliente", event.client_name],
@@ -118,17 +133,39 @@ export function EventDetail() {
               {reference(event.quote_code, `/cotizaciones/${event.quote_id}`, can("quotes:manage"))}
             </p>
           </div>
-          {cancellable && (
-            <button type="button" onClick={() => setCancelling(true)} className={`${secondaryButton} hover:text-danger`}>
-              <Icon name="close" className="size-4" />
-              Cancelar evento
-            </button>
-          )}
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {editable && (
+              <button type="button" onClick={() => setPlanning(true)} className={primaryButton}>
+                <Icon name="pencil" className="size-4" />
+                Editar planificación
+              </button>
+            )}
+            {cancellable && (
+              <button type="button" onClick={() => setCancelling(true)} className={`${secondaryButton} hover:text-danger`}>
+                <Icon name="close" className="size-4" />
+                Cancelar evento
+              </button>
+            )}
+          </div>
         </div>
+        <EventStepper
+          event={event}
+          onChanged={(updated, message) => {
+            setEvent(updated);
+            setWarning(null);
+            setNotice(message);
+          }}
+        />
         {notice && (
           <div role="status" className="flex items-center gap-2 rounded-lg bg-success/10 p-3 text-sm text-success">
             <Icon name="check" className="size-4 shrink-0" />
             {notice}
+          </div>
+        )}
+        {warning && (
+          <div role="alert" className="flex items-center gap-2 rounded-lg bg-warning/10 p-3 text-sm text-warning">
+            <Icon name="alert" className="size-4 shrink-0" />
+            {warning}
           </div>
         )}
       </header>
@@ -157,6 +194,12 @@ export function EventDetail() {
       {tab === "materiales" && (
         <div role="tabpanel" id="panel-materiales" aria-labelledby="tab-materiales">
           <EventMaterials event={event} />
+        </div>
+      )}
+
+      {tab === "historial" && (
+        <div role="tabpanel" id="panel-historial" aria-labelledby="tab-historial">
+          <EventHistory event={event} />
         </div>
       )}
 
@@ -236,6 +279,23 @@ export function EventDetail() {
         </aside>
       </div>
 
+      {planning && (
+        <PlanningForm
+          event={event}
+          onClose={() => setPlanning(false)}
+          onSaved={({ warnings, ...updated }) => {
+            setEvent(updated);
+            setPlanning(false);
+            setNotice("Planificación actualizada.");
+            setWarning(
+              warnings.includes("staff_may_need_review")
+                ? "Revisa el personal asignado: cambió la fecha u horario."
+                : null,
+            );
+          }}
+        />
+      )}
+
       {cancelling && (
         <CancelEventForm
           event={event}
@@ -243,6 +303,7 @@ export function EventDetail() {
           onSaved={(updated) => {
             setEvent(updated);
             setCancelling(false);
+            setWarning(null);
             setNotice("Evento cancelado y contrato anulado.");
           }}
         />
