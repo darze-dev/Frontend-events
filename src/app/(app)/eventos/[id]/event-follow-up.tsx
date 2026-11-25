@@ -142,7 +142,8 @@ export function EventFollowUp({ event }: { event: Event }) {
                       )}
                     </p>
                   </div>
-                  {manageActivities && (
+                  {/* Una actividad completada ya no cambia de responsable. */}
+                  {manageActivities && !done && (
                     <button
                       type="button"
                       onClick={() => setReassigning(activity)}
