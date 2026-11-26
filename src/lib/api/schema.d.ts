@@ -124,6 +124,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/assistant/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask
+         * @description Responde una pregunta en lenguaje natural usando solo funciones de consulta, con los
+         *     permisos del usuario. La conversación vive en el chat: el frontend envía el historial.
+         */
+        post: operations["assistant_ask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assistant/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Log
+         * @description Historial de consultas al asistente, de la más reciente a la más antigua (solo lectura).
+         */
+        get: operations["assistant_log_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assistant/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Status
+         * @description Si el asistente está disponible (hay clave del proveedor); el resto no depende de él.
+         */
+        get: operations["assistant_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/login": {
         parameters: {
             query?: never;
@@ -2177,6 +2238,26 @@ export interface components {
             /** Reason */
             reason: string;
         };
+        /** AskIn */
+        AskIn: {
+            /**
+             * History
+             * @description Turnos previos de la sesión de chat (el backend no guarda la conversación)
+             */
+            history?: components["schemas"]["HistoryTurnIn"][];
+            /** Question */
+            question: string;
+        };
+        /** AskOut */
+        AskOut: {
+            /** Answer */
+            answer: string;
+            /**
+             * Tools
+             * @description Funciones consultadas (transparencia)
+             */
+            tools: components["schemas"]["ToolUseOut"][];
+        };
         /** CancelIn */
         CancelIn: {
             /** Reason */
@@ -3396,6 +3477,16 @@ export interface components {
             /** Quotes */
             quotes: number;
         };
+        /** HistoryTurnIn */
+        HistoryTurnIn: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /** Text */
+            text: string;
+        };
         /**
          * LineKind
          * @enum {string}
@@ -3647,7 +3738,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "assistant_log:read";
         /**
          * PlanningWarning
          * @description R-EVT-9: cambió la fecha o el horario; el personal asignado puede tener otro horario.
@@ -3865,6 +3956,54 @@ export interface components {
          * @enum {string}
          */
         PurchaseStatus: "REQUESTED" | "ORDERED" | "RECEIVED" | "CANCELLED";
+        /** QueryLogEntryOut */
+        QueryLogEntryOut: {
+            /** Answer */
+            answer: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Duration Ms */
+            duration_ms: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Question */
+            question: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "error" | "refused";
+            /** Tools */
+            tools: components["schemas"]["ToolUseOut"][];
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Name */
+            user_name: string | null;
+        };
+        /** QueryLogPageOut */
+        QueryLogPageOut: {
+            /** Items */
+            items: components["schemas"]["QueryLogEntryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
         /** QuoteIn */
         QuoteIn: {
             /**
@@ -4728,6 +4867,14 @@ export interface components {
             /** Signer Name */
             signer_name: string;
         };
+        /** StatusOut */
+        StatusOut: {
+            /**
+             * Available
+             * @description Falso si no hay clave del proveedor configurada
+             */
+            available: boolean;
+        };
         /** SupplierIn */
         SupplierIn: {
             /** Address */
@@ -4796,6 +4943,23 @@ export interface components {
              */
             token_type: string;
             user: components["schemas"]["MeOut"];
+        };
+        /** ToolUseOut */
+        ToolUseOut: {
+            /** Error */
+            error: boolean;
+            /**
+             * Input
+             * @description Parámetros con que se ejecutó
+             */
+            input: {
+                [key: string]: unknown;
+            };
+            /**
+             * Name
+             * @description Función de consulta ejecutada
+             */
+            name: string;
         };
         /**
          * Unit
@@ -5525,6 +5689,177 @@ export interface operations {
             };
             /** @description `activity.responsible_invalid` */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    assistant_ask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description `assistant.rate_limited` (30 por hora, R-IA-2) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `assistant.provider_error` */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `assistant.unavailable` (sin clave del proveedor) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    assistant_log_list: {
+        parameters: {
+            query?: {
+                user_id?: string | null;
+                /** @description Desde (con zona horaria) */
+                since?: string | null;
+                /** @description Hasta (con zona horaria) */
+                until?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueryLogPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assistant_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

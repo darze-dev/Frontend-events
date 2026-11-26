@@ -63,6 +63,7 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     items: [
       { href: "/usuarios", label: "Usuarios", icon: "shield", permission: "users:manage" },
       { href: "/historial", label: "Historial de accesos", icon: "history", permission: "access_log:read" },
+      { href: "/historial-asistente", label: "Historial del asistente", icon: "chat", permission: "assistant_log:read" },
     ],
   },
 ];
@@ -88,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           <div className="space-y-1">
             {section.items.map((item) => {
-              const active = pathname.startsWith(item.href);
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}
