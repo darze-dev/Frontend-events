@@ -34,6 +34,8 @@ type ReportDef = {
   options?: Option[];
   flagLabel?: string;
   flagParam?: string;
+  // Oculto hasta que staff.public_api publique la consulta (hoy el backend responde 503).
+  hidden?: boolean;
 };
 
 const REPORTS: ReportDef[] = [
@@ -82,6 +84,7 @@ const REPORTS: ReportDef[] = [
     label: "Personal",
     permission: "staff:manage",
     hint: "Personal registrado y sus tarifas.",
+    hidden: true,
     ranged: false,
     optionLabel: "Función",
     optionParam: "function",
@@ -140,7 +143,7 @@ function cell(type: string, value: string | number | boolean | null | undefined)
 
 export function ReportsScreen() {
   const { can } = useAuth();
-  const available = REPORTS.filter((r) => can(r.permission));
+  const available = REPORTS.filter((r) => !r.hidden && can(r.permission));
   const [selected, setSelected] = useState<ReportKey | null>(null);
   const current = available.find((r) => r.key === selected) ?? available[0];
 
