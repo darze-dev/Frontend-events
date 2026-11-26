@@ -10,7 +10,7 @@ type Props = {
   title: string;
   onClose: () => void;
   children: ReactNode;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 };
 
 export function Modal({ title, onClose, children, size = "md" }: Props) {
@@ -34,7 +34,7 @@ export function Modal({ title, onClose, children, size = "md" }: Props) {
       }}
       aria-labelledby="modal-title"
       className={`m-auto w-[calc(100%-2rem)] rounded-2xl border border-line bg-surface p-0 text-fg shadow-xl backdrop:bg-slate-950/50 ${
-        size === "sm" ? "max-w-sm" : "max-w-lg"
+        size === "sm" ? "max-w-sm" : size === "lg" ? "max-w-3xl" : "max-w-lg"
       }`}
     >
       <div className="flex items-center justify-between border-b border-line px-5 py-4">
