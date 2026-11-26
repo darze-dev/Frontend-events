@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false); // celular: menú abierto
 
   const nav = (compact: boolean) => (
-    <nav className="flex-1 space-y-6 overflow-y-auto p-3">
+    <nav className="flex-1 space-y-6 overflow-y-auto p-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {sections.map((section) => (
         <div key={section.title}>
           {!compact && (
