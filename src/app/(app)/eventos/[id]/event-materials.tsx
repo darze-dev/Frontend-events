@@ -15,6 +15,8 @@ import { errorMessage } from "@/lib/api/errors";
 import { MOVEMENT_KINDS, PRODUCT_KINDS, formatQuantityWithUnit, toMilli } from "@/lib/inventory";
 import { formatDate } from "@/lib/quotes";
 
+import { EventRequirement } from "./event-requirement";
+
 type Recording = { kind: "EXIT" | "RETURN"; product: MovementProduct | null };
 
 // Solo salen materiales para un evento programado, confirmado o en ejecución (CA-26.1).
@@ -47,6 +49,7 @@ export function EventMaterials({ event }: { event: Event }) {
 
   return (
     <div className="space-y-4">
+      <EventRequirement event={event} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
           {pendingCount > 0
