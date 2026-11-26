@@ -1,8 +1,13 @@
 "use client";
 
 // Selector de cliente activo (CA-07.1): se escribe parte del nombre, documento o teléfono y se
-// elige de la lista. La búsqueda no distingue tildes (la hace el backend).
+// elige de la lista. La búsqueda no distingue tildes (la hace el backend). Si el cliente no existe,
+// se registra desde aquí mismo sin salir de la cotización y queda elegido.
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+
+import { ClientForm } from "@/app/(app)/clientes/client-form";
+import { useAuth } from "@/components/auth-provider";
 
 import { Icon } from "@/components/icons";
 import { fieldClass } from "@/components/ui/styles";
@@ -16,6 +21,50 @@ export function ClientPicker({ value, onChange, disabled }: Props) {
   const [text, setText] = useState("");
   const [results, setResults] = useState<Client[]>([]);
   const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const { can } = useAuth();
+  const canCreate = can("clients:manage");
+
+  function pick(client: Client) {
+    onChange({
+      id: client.id,
+      name: client.name,
+      detail: `${client.document_type} ${client.document_number} · ${client.phone}`,
+    });
+    setOpen(false);
+  }
+
+  const newClientButton = canCreate && (
+    <li className="border-t border-line">
+      <button
+        type="button"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          setOpen(false);
+          setCreating(true);
+        }}
+        className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm font-medium text-primary hover:bg-surface-muted"
+      >
+        <Icon name="plus" className="size-4" />
+        Registrar cliente nuevo{text.trim() ? ` «${text.trim()}»` : ""}
+      </button>
+    </li>
+  );
+
+  const createModal =
+    creating &&
+    createPortal(
+      <ClientForm
+        client={null}
+        initialText={text}
+        onClose={() => setCreating(false)}
+        onSaved={(saved) => {
+          setCreating(false);
+          if (saved) pick(saved);
+        }}
+      />,
+      document.body,
+    );
 
   useEffect(() => {
     if (value || !open) return;
@@ -70,23 +119,18 @@ export function ClientPicker({ value, onChange, disabled }: Props) {
       {open && (
         <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-line bg-surface shadow-lg">
           {results.length === 0 ? (
-            <li className="px-3 py-2.5 text-sm text-muted">
-              Sin resultados. Solo aparecen clientes activos; regístralo antes en Clientes.
-            </li>
+            <>
+              <li className="px-3 py-2.5 text-sm text-muted">Sin resultados. Solo aparecen clientes activos.</li>
+              {newClientButton}
+            </>
           ) : (
-            results.map((client) => (
+            <>
+              {results.map((client) => (
               <li key={client.id}>
                 <button
                   type="button"
                   onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => {
-                    onChange({
-                      id: client.id,
-                      name: client.name,
-                      detail: `${client.document_type} ${client.document_number} · ${client.phone}`,
-                    });
-                    setOpen(false);
-                  }}
+                  onClick={() => pick(client)}
                   className="block w-full px-3 py-2 text-left hover:bg-surface-muted"
                 >
                   <span className="block text-sm font-medium">{client.name}</span>
@@ -95,10 +139,13 @@ export function ClientPicker({ value, onChange, disabled }: Props) {
                   </span>
                 </button>
               </li>
-            ))
+            ))}
+              {newClientButton}
+            </>
           )}
         </ul>
       )}
+      {createModal}
     </div>
   );
 }
