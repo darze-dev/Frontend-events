@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
+import { useAuth } from "@/components/auth-provider";
 import { VoidForm } from "@/components/finance/void-form";
 import { Icon } from "@/components/icons";
 import { useEventCodes } from "@/components/inventory/use-event-codes";
@@ -21,10 +22,11 @@ import { formatSoles } from "@/lib/money";
 import { formatDate } from "@/lib/quotes";
 
 import { PurchaseStatusBadge } from "../purchase-status-badge";
+import { ExpenseForm } from "./expense-form";
 import { OrderForm } from "./order-form";
 import { ReceiveForm } from "./receive-form";
 
-type Action = "order" | "receive" | "cancel";
+type Action = "order" | "receive" | "cancel" | "expense";
 
 export function PurchaseDetail() {
   const { id } = useParams<{ id: string }>();
@@ -32,6 +34,8 @@ export function PurchaseDetail() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [action, setAction] = useState<Action | null>(null);
+  const { can } = useAuth();
+  const [downloading, setDownloading] = useState(false);
   const eventCodes = useEventCodes([purchase?.event_id]);
 
   const load = useCallback(async () => {
@@ -61,6 +65,33 @@ export function PurchaseDetail() {
     setAction(null);
     setNotice("Compra cancelada.");
     return null;
+  }
+
+  async function downloadPdf(current: Purchase) {
+    setDownloading(true);
+    setError(null);
+    try {
+      const { data, error: apiError } = await api.GET("/v1/purchasing/purchases/{purchase_id}/pdf", {
+        params: { path: { purchase_id: current.id } },
+        parseAs: "blob",
+      });
+      if (!data) {
+        setError(errorMessage(apiError));
+        return;
+      }
+      const url = URL.createObjectURL(data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${current.code}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError(errorMessage(null));
+    } finally {
+      setDownloading(false);
+    }
   }
 
   const done = (updated: Purchase, message: string) => {
@@ -105,6 +136,15 @@ export function PurchaseDetail() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => void downloadPdf(purchase)} disabled={downloading} className={secondaryButton}>
+              <Icon name="download" className="size-4" />
+              {downloading ? "Generando…" : "Descargar PDF"}
+            </button>
+            {received && !purchase.expense_movement_id && can("purchasing:manage") && can("payments:record") && (
+              <button type="button" onClick={() => setAction("expense")} className={primaryButton}>
+                Registrar egreso
+              </button>
+            )}
             {status === "REQUESTED" && (
               <button type="button" onClick={() => setAction("order")} className={primaryButton}>
                 Ordenar
@@ -224,9 +264,10 @@ export function PurchaseDetail() {
                 </div>
               )}
             </dl>
-            {received && (
-              <p className="mt-3 text-xs text-muted">
-                El pago al proveedor se registra aparte en Caja, como egreso de insumos.
+            {received && purchase.expense_movement_id && (
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-success">
+                <Icon name="check" className="size-4" />
+                Egreso registrado
               </p>
             )}
           </section>
@@ -257,6 +298,13 @@ export function PurchaseDetail() {
           purchase={purchase}
           onClose={() => setAction(null)}
           onSaved={(updated) => done(updated, "Compra recibida: las cantidades ya están en el almacén.")}
+        />
+      )}
+      {action === "expense" && (
+        <ExpenseForm
+          purchase={purchase}
+          onClose={() => setAction(null)}
+          onSaved={(updated) => done(updated, "Egreso registrado en Caja.")}
         />
       )}
       {action === "cancel" && (
