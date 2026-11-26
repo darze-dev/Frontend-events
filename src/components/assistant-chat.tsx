@@ -5,12 +5,15 @@
 //   Solo se envían los últimos turnos como contexto para las preguntas de seguimiento.
 // - Debajo de cada respuesta se muestran las funciones consultadas (transparencia).
 // - Sin clave del proveedor (assistant_status), el botón aparece como "no disponible".
+// - Bajo cada respuesta, "Correcta"/"Incorrecta" (HU40); la pestaña "Mis consultas" lista el historial propio.
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 
-import { api, type AssistantToolUse, type Permission } from "@/lib/api/client";
+import { api, type AssistantFeedbackValue, type AssistantToolUse, type Permission } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import { MAX_HISTORY_TURNS, MAX_QUESTION, MAX_TURN_TEXT, SUGGESTIONS, toolSummary } from "@/lib/assistant";
 
+import { AssistantHistory } from "./assistant-history";
+import { FeedbackButtons } from "./assistant-feedback";
 import { useAuth } from "./auth-provider";
 import { Icon } from "./icons";
 import { ErrorAlert } from "./ui/alert";
@@ -23,11 +26,21 @@ const ASSISTANT_PERMISSIONS: Permission[] = [
   "purchasing:manage",
   "clients:manage",
   "payments:record",
+  "quotes:manage",
 ];
 
 type Message =
   | { id: string; role: "user"; text: string }
-  | { id: string; role: "assistant"; text: string; tools: AssistantToolUse[] };
+  | {
+      id: string;
+      role: "assistant";
+      text: string;
+      tools: AssistantToolUse[];
+      queryId?: string; // id de la consulta en el backend: sirve para valorar la respuesta
+      feedback?: AssistantFeedbackValue;
+    };
+
+type Tab = "chat" | "history";
 
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -37,6 +50,7 @@ export function AssistantChat() {
   const storageKey = `darze.assistant.${user.id}`;
 
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>("chat");
   const [available, setAvailable] = useState<boolean | null>(null); // null: consultando
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
@@ -121,7 +135,10 @@ export function AssistantChat() {
     try {
       const { data, error: apiError } = await api.POST("/v1/assistant/ask", { body: { question, history } });
       if (data) {
-        setMessages((current) => [...current, { id: newId(), role: "assistant", text: data.answer, tools: data.tools }]);
+        setMessages((current) => [
+          ...current,
+          { id: newId(), role: "assistant", text: data.answer, tools: data.tools, queryId: data.query_id },
+        ]);
       } else {
         const code = (apiError as { code?: string } | undefined)?.code;
         if (code === "assistant.unavailable") setAvailable(false);
@@ -147,6 +164,9 @@ export function AssistantChat() {
     }
   };
 
+  const setFeedback = (id: string, feedback: AssistantFeedbackValue) =>
+    setMessages((current) => current.map((m) => (m.id === id && m.role === "assistant" ? { ...m, feedback } : m)));
+
   const clear = () => {
     setMessages([]);
     setError(null);
@@ -161,7 +181,9 @@ export function AssistantChat() {
       return;
     }
     if (event.key !== "Tab") return;
-    const focusable = panelRef.current?.querySelectorAll<HTMLElement>("button:not([disabled]), textarea:not([disabled])");
+    const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+      "button:not([disabled]), textarea:not([disabled])",
+    );
     if (!focusable || focusable.length === 0) return;
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -191,7 +213,7 @@ export function AssistantChat() {
             <h2 id={titleId} className="mr-auto font-semibold">
               Asistente
             </h2>
-            {messages.length > 0 && (
+            {tab === "chat" && messages.length > 0 && (
               <button
                 type="button"
                 onClick={clear}
@@ -212,86 +234,141 @@ export function AssistantChat() {
             </button>
           </div>
 
-          <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4" role="log" aria-live="polite" aria-label="Conversación">
-            {messages.length === 0 && (
-              <div>
-                <p className="text-sm text-muted">
-                  Pregúntame por los datos del sistema: eventos, cobros, stock, compras, flujo de caja o clientes. Solo
-                  consulto, no modifico nada.
-                </p>
-                <ul className="mt-3 space-y-2" aria-label="Preguntas sugeridas">
-                  {SUGGESTIONS.map((suggestion) => (
-                    <li key={suggestion}>
-                      <button
-                        type="button"
-                        onClick={() => void ask(suggestion)}
-                        disabled={available === false || thinking}
-                        className="w-full rounded-lg border border-line px-3 py-2 text-left text-sm transition hover:bg-surface-muted disabled:opacity-60"
-                      >
-                        {suggestion}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {messages.map((message) =>
-              message.role === "user" ? (
-                <div key={message.id} className="flex justify-end">
-                  <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-white">
-                    {message.text}
-                  </p>
-                </div>
-              ) : (
-                <div key={message.id} className="max-w-[92%]">
-                  <div className="rounded-2xl rounded-bl-sm bg-surface-muted px-3 py-2 text-sm">
-                    <PlainText text={message.text} />
-                  </div>
-                  {message.tools.length > 0 && (
-                    <p className="mt-1 px-1 text-xs text-muted">Consultó: {toolSummary(message.tools)}</p>
-                  )}
-                </div>
-              ),
-            )}
-
-            {thinking && (
-              <p role="status" className="flex items-center gap-2 text-sm text-muted">
-                <span className="size-2 animate-pulse rounded-full bg-primary" />
-                Pensando…
-              </p>
-            )}
-            {error && <ErrorAlert message={error} />}
-            <div ref={endRef} />
+          <div role="tablist" aria-label="Asistente" className="flex border-b border-line text-sm">
+            {(
+              [
+                ["chat", "Conversación"],
+                ["history", "Mis consultas"],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                id={`${titleId}-tab-${id}`}
+                aria-selected={tab === id}
+                aria-controls={`${titleId}-panel-${id}`}
+                onClick={() => setTab(id)}
+                className={`flex-1 border-b-2 px-3 py-2 font-medium transition ${
+                  tab === id ? "border-primary text-primary" : "border-transparent text-muted hover:text-fg"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          <form onSubmit={onSubmit} className="border-t border-line p-3">
-            {available === false && (
-              <p className="mb-2 text-xs text-muted">Asistente no disponible por ahora. El resto del sistema funciona igual.</p>
-            )}
-            <div className="flex items-end gap-2">
-              <textarea
-                ref={inputRef}
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={onKeyDown}
-                rows={1}
-                maxLength={MAX_QUESTION}
-                disabled={available === false}
-                aria-label="Escribe tu pregunta"
-                placeholder="Escribe tu pregunta…"
-                className="max-h-28 min-h-[2.5rem] flex-1 resize-none rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-surface-muted disabled:text-muted"
-              />
-              <button
-                type="submit"
-                disabled={thinking || available === false || draft.trim() === ""}
-                aria-label="Enviar pregunta"
-                className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-white transition hover:bg-primary-hover disabled:opacity-60"
-              >
-                <Icon name="send" className="size-4" />
-              </button>
+          {tab === "history" && (
+            <div
+              role="tabpanel"
+              id={`${titleId}-panel-history`}
+              aria-labelledby={`${titleId}-tab-history`}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <AssistantHistory />
             </div>
-          </form>
+          )}
+
+          {tab === "chat" && (
+            <div
+              className="flex-1 space-y-4 overflow-y-auto px-4 py-4"
+              role="tabpanel"
+              id={`${titleId}-panel-chat`}
+              aria-labelledby={`${titleId}-tab-chat`}
+            >
+              <div className="space-y-4" role="log" aria-live="polite" aria-label="Conversación">
+                {messages.length === 0 && (
+                  <div>
+                    <p className="text-sm text-muted">
+                      Pregúntame por los datos del sistema: eventos, cobros, stock, compras, flujo de caja o clientes.
+                      Solo consulto, no modifico nada.
+                    </p>
+                    <ul className="mt-3 space-y-2" aria-label="Preguntas sugeridas">
+                      {SUGGESTIONS.map((suggestion) => (
+                        <li key={suggestion}>
+                          <button
+                            type="button"
+                            onClick={() => void ask(suggestion)}
+                            disabled={available === false || thinking}
+                            className="w-full rounded-lg border border-line px-3 py-2 text-left text-sm transition hover:bg-surface-muted disabled:opacity-60"
+                          >
+                            {suggestion}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {messages.map((message) =>
+                  message.role === "user" ? (
+                    <div key={message.id} className="flex justify-end">
+                      <p className="max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-sm bg-primary px-3 py-2 text-sm text-white">
+                        {message.text}
+                      </p>
+                    </div>
+                  ) : (
+                    <div key={message.id} className="max-w-[92%]">
+                      <div className="rounded-2xl rounded-bl-sm bg-surface-muted px-3 py-2 text-sm">
+                        <PlainText text={message.text} />
+                      </div>
+                      {message.tools.length > 0 && (
+                        <p className="mt-1 px-1 text-xs text-muted">Consultó: {toolSummary(message.tools)}</p>
+                      )}
+                      {message.queryId && (
+                        <FeedbackButtons
+                          queryId={message.queryId}
+                          value={message.feedback ?? null}
+                          onRated={(value) => setFeedback(message.id, value)}
+                        />
+                      )}
+                    </div>
+                  ),
+                )}
+
+                {thinking && (
+                  <p role="status" className="flex items-center gap-2 text-sm text-muted">
+                    <span className="size-2 animate-pulse rounded-full bg-primary" />
+                    Pensando…
+                  </p>
+                )}
+                {error && <ErrorAlert message={error} />}
+                <div ref={endRef} />
+              </div>
+            </div>
+          )}
+
+          {tab === "chat" && (
+            <form onSubmit={onSubmit} className="border-t border-line p-3">
+              {available === false && (
+                <p className="mb-2 text-xs text-muted">
+                  Asistente no disponible por ahora. El resto del sistema funciona igual.
+                </p>
+              )}
+              <div className="flex items-end gap-2">
+                <textarea
+                  ref={inputRef}
+                  value={draft}
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={onKeyDown}
+                  rows={1}
+                  maxLength={MAX_QUESTION}
+                  disabled={available === false}
+                  aria-label="Escribe tu pregunta"
+                  placeholder="Escribe tu pregunta…"
+                  className="max-h-28 min-h-[2.5rem] flex-1 resize-none rounded-lg border border-line bg-surface px-3 py-2 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:bg-surface-muted disabled:text-muted"
+                />
+                <button
+                  type="submit"
+                  disabled={thinking || available === false || draft.trim() === ""}
+                  aria-label="Enviar pregunta"
+                  className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-white transition hover:bg-primary-hover disabled:opacity-60"
+                >
+                  <Icon name="send" className="size-4" />
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       )}
 
@@ -333,7 +410,10 @@ function PlainText({ text }: { text: string }) {
     if (list) {
       const Tag = list.ordered ? "ol" : "ul";
       blocks.push(
-        <Tag key={blocks.length} className={`ml-5 space-y-0.5 break-words ${list.ordered ? "list-decimal" : "list-disc"}`}>
+        <Tag
+          key={blocks.length}
+          className={`ml-5 space-y-0.5 break-words ${list.ordered ? "list-decimal" : "list-disc"}`}
+        >
           {list.items.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
