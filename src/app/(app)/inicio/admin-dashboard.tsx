@@ -1,18 +1,17 @@
 "use client";
 
-// Panel del administrador (HU31, primera parte): solo indicadores con datos reales.
-// Caja y stock se agregarán cuando existan sus módulos; no se muestran en cero para no
-// presentar un número que el sistema todavía no calcula.
+// Panel del administrador (HU31): cotizaciones, próximos eventos, caja, cobros, almacén y compras.
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { Icon, type IconName } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
 import { fieldClass } from "@/components/ui/styles";
-import { api, type Dashboard, type QuoteStatus } from "@/lib/api/client";
+import { api, type Dashboard, type EventStatus, type QuoteStatus } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
 import { formatSoles } from "@/lib/money";
-import { EVENT_TYPE_LABELS, formatDate, todayInLima } from "@/lib/quotes";
+import { EVENT_STATUS } from "@/lib/events";
+import { formatDate, todayInLima } from "@/lib/quotes";
 
 import { QuoteStatusBadge } from "../cotizaciones/quote-status-badge";
 
@@ -78,40 +77,75 @@ export function AdminDashboard() {
         />
       </div>
 
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Kpi icon="wallet" label="Caja del mes" value={formatSoles(data.cash.net_cents)} hint={`Ingresos ${formatSoles(data.cash.income_cents)} · Egresos ${formatSoles(data.cash.expense_cents)}`} tone="success" href="/flujo-de-caja" />
+        <Kpi
+          icon="contract"
+          label="Cobros pendientes"
+          value={formatSoles(data.receivables.total_cents)}
+          hint={`${data.receivables.contracts} ${data.receivables.contracts === 1 ? "contrato" : "contratos"} con saldo`}
+        />
+        <Kpi
+          icon="history"
+          label="Cobros vencidos"
+          value={formatSoles(data.receivables.overdue_cents)}
+          hint={`${data.receivables.overdue_contracts} ${data.receivables.overdue_contracts === 1 ? "contrato" : "contratos"} con saldo vencido`}
+        />
+        <Kpi
+          icon="box"
+          label="Alertas de almacén"
+          value={String(data.inventory.low_stock + data.inventory.expiring_soon)}
+          hint={`${data.inventory.low_stock} con stock bajo · ${data.inventory.expiring_soon} por vencer`}
+          href="/almacen"
+        />
+        <Kpi
+          icon="cart"
+          label="Compras abiertas"
+          value={String(data.purchases.open)}
+          hint={`${data.purchases.requested} solicitadas · ${data.purchases.ordered} ordenadas`}
+          href="/compras"
+        />
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-line bg-surface p-5">
-          <h3 className="font-semibold">Próximas fechas</h3>
-          <p className="text-xs text-muted">Cotizaciones aceptadas con evento en los próximos 30 días.</p>
-          {q.upcoming.length === 0 ? (
-            <p className="mt-6 text-center text-sm text-muted">No hay eventos aceptados en los próximos 30 días.</p>
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">Próximos eventos</h3>
+            <Link href="/eventos/calendario" className="text-sm text-primary hover:underline">
+              Calendario
+            </Link>
+          </div>
+          <p className="text-xs text-muted">De hoy a 14 días, con el saldo por cobrar de cada contrato.</p>
+          {data.upcoming_events.length === 0 ? (
+            <p className="mt-6 text-center text-sm text-muted">No hay eventos en los próximos 14 días.</p>
           ) : (
             <ul className="mt-4 divide-y divide-line">
-              {q.upcoming.map((quote) => (
-                <li key={quote.id}>
-                  <Link href={`/cotizaciones/${quote.id}`} className="flex items-center gap-4 py-3 hover:opacity-80">
+              {data.upcoming_events.map((event) => (
+                <li key={event.id}>
+                  <Link href={`/eventos/${event.id}`} className="flex items-center gap-4 py-3 hover:opacity-80">
                     <span className="flex w-14 shrink-0 flex-col items-center rounded-lg bg-primary-soft py-1.5 text-primary">
-                      <span className="text-lg font-semibold leading-none">{quote.event_date.slice(8, 10)}</span>
-                      <span className="text-[11px] uppercase">{formatDate(quote.event_date).split(" ")[1]}</span>
+                      <span className="text-lg font-semibold leading-none">{event.event_date.slice(8, 10)}</span>
+                      <span className="text-[11px] uppercase">{formatDate(event.event_date).split(" ")[1]}</span>
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{quote.client_name}</span>
+                      <span className="block truncate text-sm font-medium">{event.client_name}</span>
                       <span className="block text-xs text-muted">
-                        {EVENT_TYPE_LABELS[quote.event_type as keyof typeof EVENT_TYPE_LABELS]} · {quote.guests} invitados · {quote.code}
+                        {event.code} · {EVENT_STATUS[event.status as EventStatus]?.label ?? event.status}
                       </span>
                     </span>
-                    <span className="text-sm font-medium tabular-nums">{formatSoles(quote.total_cents)}</span>
+                    <span className="flex shrink-0 flex-col items-end">
+                      <span className={`text-sm font-medium tabular-nums ${event.overdue ? "text-danger" : ""}`}>
+                        {formatSoles(event.balance_cents)}
+                      </span>
+                      <span className={`text-[11px] ${event.overdue ? "text-danger" : "text-muted"}`}>
+                        {event.overdue ? "Saldo vencido" : "Saldo"}
+                      </span>
+                    </span>
                   </Link>
                 </li>
               ))}
             </ul>
           )}
-          <p className="mt-4 rounded-lg bg-surface-muted p-2.5 text-xs text-muted">
-            Son cotizaciones aceptadas, con o sin contrato firmado. Los eventos ya confirmados están en el{" "}
-            <Link href="/eventos/calendario" className="font-medium text-primary hover:underline">
-              calendario
-            </Link>
-            .
-          </p>
         </section>
 
         <section className="rounded-xl border border-line bg-surface p-5">
@@ -147,8 +181,7 @@ export function AdminDashboard() {
       </div>
 
       <p className="text-xs text-muted">
-        “Aceptado en el mes” cuenta las cotizaciones creadas en ese mes que hoy están aceptadas. Caja y stock se mostrarán
-        cuando estén listos esos módulos.
+        “Aceptado en el mes” cuenta las cotizaciones creadas en ese mes que hoy están aceptadas.
       </p>
     </div>
   );

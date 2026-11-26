@@ -613,7 +613,8 @@ export interface paths {
         };
         /**
          * Get Dashboard
-         * @description Indicadores reales del negocio. Caja y stock se agregan cuando existan sus módulos.
+         * @description Indicadores reales del negocio en una petición: cotizaciones, próximos eventos, caja del
+         *     mes, cobros pendientes, alertas de almacén y compras abiertas (CA-31.1 a CA-31.11).
          */
         get: operations["dashboard_get"];
         put?: never;
@@ -1490,6 +1491,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/reports/cash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cash Report
+         * @description CA-32.2: cada pago de cliente, devolución, ingreso y egreso; anulados marcados y fuera
+         *     de los totales. Solo administrador.
+         */
+        get: operations["reports_cash"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/reports/cash-flow": {
         parameters: {
             query?: never;
@@ -1502,6 +1524,27 @@ export interface paths {
          * @description Ingresos, egresos por categoría y saldo del periodo, por mes; sin anulados (CA-22.1).
          */
         get: operations["reports_cash_flow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Events Report
+         * @description CA-32.1: por fecha del evento, estado y cliente. Total contratado, pagado y saldo van
+         *     vacíos (`null`) sin `payments:record`.
+         */
+        get: operations["reports_events"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1545,6 +1588,87 @@ export interface paths {
          *     `payments:record` (CA-14.5); `staff`, vacío mientras no haya información de personal.
          */
         get: operations["reports_event_sheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventory Report
+         * @description CA-32.3: stock actual por producto con costo promedio, valor y alertas.
+         */
+        get: operations["reports_inventory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/inventory-movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventory Movements Report
+         * @description CA-32.3: movimientos de almacén del rango, por fecha del movimiento.
+         */
+        get: operations["reports_inventory_movements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Purchases Report
+         * @description CA-32.4: compras creadas en el rango (días de Lima), con proveedor, total y recepción.
+         */
+        get: operations["reports_purchases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Staff Report
+         * @description CA-32.5: trabajadores con función, tipo, tarifa y estado. Responde 503
+         *     `report.unavailable` hasta que `staff` publique su consulta de trabajadores.
+         */
+        get: operations["reports_staff"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2318,19 +2442,101 @@ export interface components {
             /** Name */
             name: string;
         };
+        /**
+         * DashboardCashOut
+         * @description Caja del mes elegido, con el mismo cálculo que el flujo de caja (HU22).
+         */
+        DashboardCashOut: {
+            /** Expense Cents */
+            expense_cents: number;
+            /**
+             * Income Cents
+             * @description Pagos de clientes netos de devoluciones + otros
+             */
+            income_cents: number;
+            /** Net Cents */
+            net_cents: number;
+        };
+        /** DashboardEventOut */
+        DashboardEventOut: {
+            /**
+             * Balance Cents
+             * @description Saldo por cobrar del contrato (RN15)
+             */
+            balance_cents: number;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Overdue
+             * @description Saldo vencido (R-PAG-2)
+             */
+            overdue: boolean;
+            /** Status */
+            status: string;
+        };
+        /** DashboardInventoryOut */
+        DashboardInventoryOut: {
+            /**
+             * Expiring Soon
+             * @description Productos activos por vencer (15 días o menos)
+             */
+            expiring_soon: number;
+            /**
+             * Low Stock
+             * @description Productos activos en stock bajo
+             */
+            low_stock: number;
+        };
         /** DashboardOut */
         DashboardOut: {
+            /** @description Caja del mes elegido (CA-31.8) */
+            cash: components["schemas"]["DashboardCashOut"];
             /**
              * Currency
              * @default PEN
              */
             currency: string;
+            /** @description Alertas de almacén (CA-31.10) */
+            inventory: components["schemas"]["DashboardInventoryOut"];
             /**
              * Month
              * @description AAAA-MM
              */
             month: string;
+            /** @description Compras abiertas (CA-31.11) */
+            purchases: components["schemas"]["DashboardPurchasesOut"];
             quotes: components["schemas"]["DashboardQuotesOut"];
+            /** @description Cobros pendientes (CA-31.9) */
+            receivables: components["schemas"]["DashboardReceivablesOut"];
+            /**
+             * Upcoming Events
+             * @description Eventos de hoy a 14 días, sin cancelados ni finalizados (CA-31.7)
+             */
+            upcoming_events: components["schemas"]["DashboardEventOut"][];
+        };
+        /** DashboardPurchasesOut */
+        DashboardPurchasesOut: {
+            /**
+             * Open
+             * @description Solicitadas + ordenadas
+             */
+            open: number;
+            /** Ordered */
+            ordered: number;
+            /** Requested */
+            requested: number;
         };
         /** DashboardQuoteOut */
         DashboardQuoteOut: {
@@ -2382,9 +2588,29 @@ export interface components {
             sent_pending: number;
             /**
              * Upcoming
-             * @description Aceptadas con evento en los próximos 30 días
+             * @description Aceptadas con evento en los próximos 30 días. Obsoleto: usar `upcoming_events` del panel (CA-31.7)
              */
             upcoming: components["schemas"]["DashboardQuoteOut"][];
+        };
+        /** DashboardReceivablesOut */
+        DashboardReceivablesOut: {
+            /**
+             * Contracts
+             * @description Contratos firmados con saldo
+             */
+            contracts: number;
+            /** Overdue Cents */
+            overdue_cents: number;
+            /**
+             * Overdue Contracts
+             * @description De ellos, con el saldo vencido
+             */
+            overdue_contracts: number;
+            /**
+             * Total Cents
+             * @description Por cobrar de contratos firmados
+             */
+            total_cents: number;
         };
         /** EntryIn */
         EntryIn: {
@@ -3704,6 +3930,84 @@ export interface components {
         RefreshIn: {
             /** Refresh Token */
             refresh_token: string;
+        };
+        /** ReportColumnOut */
+        ReportColumnOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Type
+             * @description text, date (AAAA-MM-DD), money (céntimos), quantity (texto decimal), integer o boolean
+             */
+            type: string;
+        };
+        /** ReportFilterOut */
+        ReportFilterOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @description Valor del filtro tal como se muestra
+             */
+            value: string;
+        };
+        /**
+         * ReportFormat
+         * @enum {string}
+         */
+        ReportFormat: "json" | "csv" | "pdf";
+        /** ReportOut */
+        ReportOut: {
+            /** Columns */
+            columns: components["schemas"]["ReportColumnOut"][];
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Filters */
+            filters: components["schemas"]["ReportFilterOut"][];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Notes */
+            notes: string[];
+            /**
+             * Report
+             * @description events, cash, inventory, inventory_movements, purchases…
+             */
+            report: string;
+            /**
+             * Rows
+             * @description Una entrada por fila, por `key`
+             */
+            rows: {
+                [key: string]: string | number | boolean | null;
+            }[];
+            /** Title */
+            title: string;
+            /** Totals */
+            totals: components["schemas"]["ReportTotalOut"][];
+        };
+        /** ReportTotalOut */
+        ReportTotalOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Type */
+            type: string;
+            /**
+             * Value
+             * @description `null`: sin dato o monto oculto
+             */
+            value: string | number | boolean | null;
         };
         /** RequestLineIn */
         RequestLineIn: {
@@ -9860,6 +10164,62 @@ export interface operations {
             };
         };
     };
+    reports_cash: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     reports_cash_flow: {
         parameters: {
             query: {
@@ -9880,6 +10240,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CashFlowOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_events: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                status?: components["schemas"]["EventStatus"] | null;
+                client_id?: string | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
                 };
             };
             /** @description `auth.not_authenticated`, `auth.session_expired` */
@@ -10023,6 +10441,237 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_inventory: {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["Category"] | null;
+                include_inactive?: boolean;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_inventory_movements: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                kind?: components["schemas"]["MovementKind"] | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_purchases: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                status?: components["schemas"]["PurchaseStatus"] | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_staff: {
+        parameters: {
+            query?: {
+                function?: string | null;
+                active?: boolean | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description `report.unavailable` */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };
