@@ -154,11 +154,54 @@ export interface paths {
         };
         /**
          * List Log
-         * @description Historial de consultas al asistente, de la más reciente a la más antigua (solo lectura).
+         * @description Historial de consultas al asistente, de la más reciente a la más antigua, con la última
+         *     valoración de cada una (solo lectura).
          */
         get: operations["assistant_log_list"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assistant/my-queries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Queries
+         * @description Mis conversaciones anteriores (solo las del usuario), de la más reciente a la más antigua,
+         *     con mi última valoración de cada respuesta.
+         */
+        get: operations["assistant_my_queries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assistant/queries/{query_id}/feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Rate Query
+         * @description Marca una respuesta propia como correcta o incorrecta. Valorar de nuevo reemplaza la
+         *     anterior (vale la última); no se edita ni borra nada. Solo el autor de la consulta.
+         */
+        post: operations["assistant_feedback_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2273,6 +2316,12 @@ export interface components {
             /** Answer */
             answer: string;
             /**
+             * Query Id
+             * Format: uuid
+             * @description Id de la consulta; sirve para valorar la respuesta
+             */
+            query_id: string;
+            /**
              * Tools
              * @description Funciones consultadas (transparencia)
              */
@@ -3441,6 +3490,32 @@ export interface components {
             /** Transport Cents */
             transport_cents: number;
         };
+        /** FeedbackIn */
+        FeedbackIn: {
+            /** Comment */
+            comment?: string | null;
+            /**
+             * Value
+             * @description Correcta o incorrecta
+             * @enum {string}
+             */
+            value: "correct" | "incorrect";
+        };
+        /** FeedbackOut */
+        FeedbackOut: {
+            /** Comment */
+            comment: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Value
+             * @enum {string}
+             */
+            value: "correct" | "incorrect";
+        };
         /** FieldChangeOut */
         FieldChangeOut: {
             /** After */
@@ -3610,6 +3685,45 @@ export interface components {
             voided_by: string;
             /** Voided By Name */
             voided_by_name: string;
+        };
+        /** MyQueriesPageOut */
+        MyQueriesPageOut: {
+            /** Items */
+            items: components["schemas"]["MyQueryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * MyQueryOut
+         * @description Una consulta propia: pregunta, respuesta, funciones y su última valoración.
+         */
+        MyQueryOut: {
+            /** Answer */
+            answer: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            feedback: components["schemas"]["FeedbackOut"] | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Question */
+            question: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "error" | "refused";
+            /** Tools */
+            tools: components["schemas"]["ToolUseOut"][];
         };
         /** NoteIn */
         NoteIn: {
@@ -3987,6 +4101,8 @@ export interface components {
             created_at: string;
             /** Duration Ms */
             duration_ms: number;
+            /** @description Última valoración del autor, si la hay */
+            feedback: components["schemas"]["FeedbackOut"] | null;
             /**
              * Id
              * Format: uuid
@@ -5833,6 +5949,118 @@ export interface operations {
             };
             /** @description `auth.forbidden` */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assistant_my_queries: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyQueriesPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assistant_feedback_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                query_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FeedbackIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedbackOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `assistant.query_not_found` */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

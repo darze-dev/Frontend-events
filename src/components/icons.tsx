@@ -123,6 +123,20 @@ const paths = {
     </>
   ),
   check: <path d="M20 6 9 17l-5-5" />,
+  thumbUp: (
+    <>
+      <path d="M7 10v11" />
+      <path d="M7 10 11 3a2 2 0 0 1 3 1.7V9h5.5a2 2 0 0 1 2 2.3l-1.3 8A2 2 0 0 1 18.2 21H7" />
+      <path d="M3 10h4v11H3Z" />
+    </>
+  ),
+  thumbDown: (
+    <>
+      <path d="M17 14V3" />
+      <path d="M17 14 13 21a2 2 0 0 1-3-1.7V15H4.5a2 2 0 0 1-2-2.3l1.3-8A2 2 0 0 1 5.8 3H17" />
+      <path d="M21 3h-4v11h4Z" />
+    </>
+  ),
   chevronDown: <path d="m6 9 6 6 6-6" />,
   chat: <path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12Z" />,
   undo: (
