@@ -123,6 +123,8 @@ const paths = {
     </>
   ),
   check: <path d="M20 6 9 17l-5-5" />,
+  chevronDown: <path d="m6 9 6 6 6-6" />,
+  chat: <path d="M21 12a8 8 0 0 1-11.6 7.1L3 21l1.9-5.4A8 8 0 1 1 21 12Z" />,
   undo: (
     <>
       <path d="M9 14 4 9l5-5" />

@@ -16,7 +16,7 @@ import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
 // `permission`: el menú muestra el módulo solo si el rol del usuario lo tiene (HU01).
-type MenuItem = { href: string; label: string; icon: IconName; permission?: Permission };
+type MenuItem = { href: string; label: string; icon: IconName; permission?: Permission; anyOf?: Permission[] };
 
 // Solo los módulos que ya existen. Cada módulo nuevo se agrega aquí cuando esté listo.
 export const SECTIONS: { title: string; items: MenuItem[] }[] = [
@@ -50,6 +50,12 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     items: [
       { href: "/caja", label: "Caja", icon: "wallet", permission: "payments:record" },
       { href: "/flujo-de-caja", label: "Flujo de caja", icon: "chart", permission: "finance:read" },
+      {
+        href: "/reportes",
+        label: "Reportes",
+        icon: "file",
+        anyOf: ["events:read", "finance:read", "inventory:read", "purchasing:manage", "staff:manage"],
+      },
     ],
   },
   {
@@ -57,6 +63,7 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
     items: [
       { href: "/usuarios", label: "Usuarios", icon: "shield", permission: "users:manage" },
       { href: "/historial", label: "Historial de accesos", icon: "history", permission: "access_log:read" },
+      { href: "/historial-asistente", label: "Historial del asistente", icon: "chat", permission: "assistant_log:read" },
     ],
   },
 ];
@@ -66,7 +73,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { user, can, logout } = useAuth();
   const sections = SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => !item.permission || can(item.permission)),
+    items: section.items.filter((item) => (!item.permission || can(item.permission)) && (!item.anyOf || item.anyOf.some(can))),
   })).filter((section) => section.items.length > 0);
   const [collapsed, setCollapsed] = useState(false); // computadora: menú solo con íconos
   const [mobileOpen, setMobileOpen] = useState(false); // celular: menú abierto
@@ -82,7 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           <div className="space-y-1">
             {section.items.map((item) => {
-              const active = pathname.startsWith(item.href);
+              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}

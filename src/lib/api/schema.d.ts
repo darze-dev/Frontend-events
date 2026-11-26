@@ -124,6 +124,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/assistant/ask": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask
+         * @description Responde una pregunta en lenguaje natural usando solo funciones de consulta, con los
+         *     permisos del usuario. La conversación vive en el chat: el frontend envía el historial.
+         */
+        post: operations["assistant_ask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assistant/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Log
+         * @description Historial de consultas al asistente, de la más reciente a la más antigua (solo lectura).
+         */
+        get: operations["assistant_log_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/assistant/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Status
+         * @description Si el asistente está disponible (hay clave del proveedor); el resto no depende de él.
+         */
+        get: operations["assistant_status"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/login": {
         parameters: {
             query?: never;
@@ -613,7 +674,8 @@ export interface paths {
         };
         /**
          * Get Dashboard
-         * @description Indicadores reales del negocio. Caja y stock se agregan cuando existan sus módulos.
+         * @description Indicadores reales del negocio en una petición: cotizaciones, próximos eventos, caja del
+         *     mes, cobros pendientes, alertas de almacén y compras abiertas (CA-31.1 a CA-31.11).
          */
         get: operations["dashboard_get"];
         put?: never;
@@ -898,6 +960,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/events/{event_id}/requirement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Event Requirement
+         * @description CA-25.1 a CA-25.3: requerido, salido, reservado, disponible y faltante por producto.
+         */
+        get: operations["inventory_event_requirement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/events/{event_id}/reservations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Reservations
+         * @description CA-25.4: aparta lo disponible para el evento sin mover el stock (R-REC-3).
+         *
+         *     Devuelve todo lo vigente reservado del evento.
+         */
+        post: operations["inventory_reservations_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/inventory/events/{event_id}/reservations/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Reservation
+         * @description Libera la reserva vigente del producto en el evento.
+         */
+        delete: operations["inventory_reservations_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/inventory/movements/adjustment": {
         parameters: {
             query?: never;
@@ -1100,6 +1224,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/inventory/recipes/{service_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Recipe
+         * @description CA-24.1: insumos del servicio (vacío si aún no tiene).
+         */
+        get: operations["inventory_recipe_get"];
+        /**
+         * Put Recipe
+         * @description CA-24.3: reemplaza todos los insumos del servicio; un producto una sola vez (CA-24.2).
+         */
+        put: operations["inventory_recipe_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/movements": {
         parameters: {
             query?: never;
@@ -1229,6 +1377,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/purchasing/purchases/from-event/{event_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Purchase From Event
+         * @description CA-25.6: solicitud con los faltantes del requerimiento, vinculada al evento.
+         */
+        post: operations["purchasing_purchases_from_event"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/purchasing/purchases/{purchase_id}": {
         parameters: {
             query?: never;
@@ -1266,6 +1434,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/purchasing/purchases/{purchase_id}/expense": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Register Expense
+         * @description CA-30.3 y R-COM-3: egreso de insumos por el total de la compra recibida, una sola vez.
+         */
+        post: operations["purchasing_purchases_expense"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/purchasing/purchases/{purchase_id}/order": {
         parameters: {
             query?: never;
@@ -1280,6 +1468,26 @@ export interface paths {
          * @description CA-29.1: elige proveedor y costo unitario de cada línea.
          */
         post: operations["purchasing_purchases_order"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/purchasing/purchases/{purchase_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Purchase Pdf
+         * @description CA-30.2: descarga la compra como orden de compra en PDF. No la modifica.
+         */
+        get: operations["purchasing_purchases_pdf"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1490,6 +1698,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/reports/cash": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cash Report
+         * @description CA-32.2: cada pago de cliente, devolución, ingreso y egreso; anulados marcados y fuera
+         *     de los totales. Solo administrador.
+         */
+        get: operations["reports_cash"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/reports/cash-flow": {
         parameters: {
             query?: never;
@@ -1502,6 +1731,27 @@ export interface paths {
          * @description Ingresos, egresos por categoría y saldo del periodo, por mes; sin anulados (CA-22.1).
          */
         get: operations["reports_cash_flow"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Events Report
+         * @description CA-32.1: por fecha del evento, estado y cliente. Total contratado, pagado y saldo van
+         *     vacíos (`null`) sin `payments:record`.
+         */
+        get: operations["reports_events"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1545,6 +1795,87 @@ export interface paths {
          *     `payments:record` (CA-14.5); `staff`, vacío mientras no haya información de personal.
          */
         get: operations["reports_event_sheet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/inventory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventory Report
+         * @description CA-32.3: stock actual por producto con costo promedio, valor y alertas.
+         */
+        get: operations["reports_inventory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/inventory-movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventory Movements Report
+         * @description CA-32.3: movimientos de almacén del rango, por fecha del movimiento.
+         */
+        get: operations["reports_inventory_movements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/purchases": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Purchases Report
+         * @description CA-32.4: compras creadas en el rango (días de Lima), con proveedor, total y recepción.
+         */
+        get: operations["reports_purchases"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/reports/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Staff Report
+         * @description CA-32.5: trabajadores con función, tipo, tarifa y estado. Responde 503
+         *     `report.unavailable` hasta que `staff` publique su consulta de trabajadores.
+         */
+        get: operations["reports_staff"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1906,6 +2237,26 @@ export interface components {
             quantity: string;
             /** Reason */
             reason: string;
+        };
+        /** AskIn */
+        AskIn: {
+            /**
+             * History
+             * @description Turnos previos de la sesión de chat (el backend no guarda la conversación)
+             */
+            history?: components["schemas"]["HistoryTurnIn"][];
+            /** Question */
+            question: string;
+        };
+        /** AskOut */
+        AskOut: {
+            /** Answer */
+            answer: string;
+            /**
+             * Tools
+             * @description Funciones consultadas (transparencia)
+             */
+            tools: components["schemas"]["ToolUseOut"][];
         };
         /** CancelIn */
         CancelIn: {
@@ -2318,19 +2669,101 @@ export interface components {
             /** Name */
             name: string;
         };
+        /**
+         * DashboardCashOut
+         * @description Caja del mes elegido, con el mismo cálculo que el flujo de caja (HU22).
+         */
+        DashboardCashOut: {
+            /** Expense Cents */
+            expense_cents: number;
+            /**
+             * Income Cents
+             * @description Pagos de clientes netos de devoluciones + otros
+             */
+            income_cents: number;
+            /** Net Cents */
+            net_cents: number;
+        };
+        /** DashboardEventOut */
+        DashboardEventOut: {
+            /**
+             * Balance Cents
+             * @description Saldo por cobrar del contrato (RN15)
+             */
+            balance_cents: number;
+            /** Client Name */
+            client_name: string;
+            /** Code */
+            code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Overdue
+             * @description Saldo vencido (R-PAG-2)
+             */
+            overdue: boolean;
+            /** Status */
+            status: string;
+        };
+        /** DashboardInventoryOut */
+        DashboardInventoryOut: {
+            /**
+             * Expiring Soon
+             * @description Productos activos por vencer (15 días o menos)
+             */
+            expiring_soon: number;
+            /**
+             * Low Stock
+             * @description Productos activos en stock bajo
+             */
+            low_stock: number;
+        };
         /** DashboardOut */
         DashboardOut: {
+            /** @description Caja del mes elegido (CA-31.8) */
+            cash: components["schemas"]["DashboardCashOut"];
             /**
              * Currency
              * @default PEN
              */
             currency: string;
+            /** @description Alertas de almacén (CA-31.10) */
+            inventory: components["schemas"]["DashboardInventoryOut"];
             /**
              * Month
              * @description AAAA-MM
              */
             month: string;
+            /** @description Compras abiertas (CA-31.11) */
+            purchases: components["schemas"]["DashboardPurchasesOut"];
             quotes: components["schemas"]["DashboardQuotesOut"];
+            /** @description Cobros pendientes (CA-31.9) */
+            receivables: components["schemas"]["DashboardReceivablesOut"];
+            /**
+             * Upcoming Events
+             * @description Eventos de hoy a 14 días, sin cancelados ni finalizados (CA-31.7)
+             */
+            upcoming_events: components["schemas"]["DashboardEventOut"][];
+        };
+        /** DashboardPurchasesOut */
+        DashboardPurchasesOut: {
+            /**
+             * Open
+             * @description Solicitadas + ordenadas
+             */
+            open: number;
+            /** Ordered */
+            ordered: number;
+            /** Requested */
+            requested: number;
         };
         /** DashboardQuoteOut */
         DashboardQuoteOut: {
@@ -2382,9 +2815,29 @@ export interface components {
             sent_pending: number;
             /**
              * Upcoming
-             * @description Aceptadas con evento en los próximos 30 días
+             * @description Aceptadas con evento en los próximos 30 días. Obsoleto: usar `upcoming_events` del panel (CA-31.7)
              */
             upcoming: components["schemas"]["DashboardQuoteOut"][];
+        };
+        /** DashboardReceivablesOut */
+        DashboardReceivablesOut: {
+            /**
+             * Contracts
+             * @description Contratos firmados con saldo
+             */
+            contracts: number;
+            /** Overdue Cents */
+            overdue_cents: number;
+            /**
+             * Overdue Contracts
+             * @description De ellos, con el saldo vencido
+             */
+            overdue_contracts: number;
+            /**
+             * Total Cents
+             * @description Por cobrar de contratos firmados
+             */
+            total_cents: number;
         };
         /** EntryIn */
         EntryIn: {
@@ -2778,6 +3231,30 @@ export interface components {
              */
             warnings: components["schemas"]["PlanningWarning"][];
         };
+        /** EventRequirementOut */
+        EventRequirementOut: {
+            /**
+             * Calculated
+             * @description Falso en eventos finalizados o cancelados: solo se ve lo que salió
+             */
+            calculated: boolean;
+            /** Event Code */
+            event_code: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** Guests */
+            guests: number;
+            /** Lines */
+            lines: components["schemas"]["RequirementLineOut"][];
+            /**
+             * Without Recipe
+             * @description Servicios sin insumos definidos (CA-25.3)
+             */
+            without_recipe: string[];
+        };
         /** EventResultOut */
         EventResultOut: {
             /**
@@ -2920,6 +3397,19 @@ export interface components {
          * @enum {string}
          */
         EventType: "WEDDING" | "BIRTHDAY" | "QUINCEANERA" | "CORPORATE" | "GRADUATION" | "OTHER";
+        /** ExpenseIn */
+        ExpenseIn: {
+            /**
+             * @description Cómo se pagó
+             * @default CASH
+             */
+            method: components["schemas"]["PaymentMethod"];
+            /**
+             * Reference
+             * @description Operación o comprobante; por defecto, el de la factura
+             */
+            reference?: string | null;
+        };
         /** ExpensesOut */
         ExpensesOut: {
             /** Other Cents */
@@ -2986,6 +3476,16 @@ export interface components {
             events: number;
             /** Quotes */
             quotes: number;
+        };
+        /** HistoryTurnIn */
+        HistoryTurnIn: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /** Text */
+            text: string;
         };
         /**
          * LineKind
@@ -3238,7 +3738,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "assistant_log:read";
         /**
          * PlanningWarning
          * @description R-EVT-9: cambió la fecha o el horario; el personal asignado puede tener otro horario.
@@ -3398,6 +3898,11 @@ export interface components {
             /** Event Id */
             event_id: string | null;
             /**
+             * Expense Movement Id
+             * @description Egreso de caja de la compra; si existe, ya se registró (R-COM-3)
+             */
+            expense_movement_id: string | null;
+            /**
              * Id
              * Format: uuid
              */
@@ -3451,6 +3956,54 @@ export interface components {
          * @enum {string}
          */
         PurchaseStatus: "REQUESTED" | "ORDERED" | "RECEIVED" | "CANCELLED";
+        /** QueryLogEntryOut */
+        QueryLogEntryOut: {
+            /** Answer */
+            answer: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Duration Ms */
+            duration_ms: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Question */
+            question: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "error" | "refused";
+            /** Tools */
+            tools: components["schemas"]["ToolUseOut"][];
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+            /** User Name */
+            user_name: string | null;
+        };
+        /** QueryLogPageOut */
+        QueryLogPageOut: {
+            /** Items */
+            items: components["schemas"]["QueryLogEntryOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
         /** QuoteIn */
         QuoteIn: {
             /**
@@ -3688,6 +4241,67 @@ export interface components {
              */
             received_quantity: string;
         };
+        /**
+         * RecipeBasis
+         * @enum {string}
+         */
+        RecipeBasis: "PER_PERSON" | "PER_SERVICE";
+        /** RecipeIn */
+        RecipeIn: {
+            /**
+             * Lines
+             * @description Reemplaza todos los insumos del servicio
+             */
+            lines: components["schemas"]["RecipeLineIn"][];
+        };
+        /** RecipeLineIn */
+        RecipeLineIn: {
+            /** @description PER_PERSON: por invitado del evento. PER_SERVICE: por unidad contratada */
+            basis: components["schemas"]["RecipeBasis"];
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description En la unidad del producto (R-INV-1)
+             * @example 12.5
+             */
+            quantity: string;
+        };
+        /** RecipeLineOut */
+        RecipeLineOut: {
+            basis: components["schemas"]["RecipeBasis"];
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Cantidad decimal con 3 decimales
+             * @example 12.500
+             */
+            quantity: string;
+            unit: components["schemas"]["Unit"];
+        };
+        /** RecipeOut */
+        RecipeOut: {
+            /** Lines */
+            lines: components["schemas"]["RecipeLineOut"][];
+            /**
+             * Service Id
+             * Format: uuid
+             */
+            service_id: string;
+            /** Service Name */
+            service_name: string;
+        };
         /** RecordedMovementOut */
         RecordedMovementOut: {
             /** Avg Cost Cents */
@@ -3705,6 +4319,84 @@ export interface components {
             /** Refresh Token */
             refresh_token: string;
         };
+        /** ReportColumnOut */
+        ReportColumnOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Type
+             * @description text, date (AAAA-MM-DD), money (céntimos), quantity (texto decimal), integer o boolean
+             */
+            type: string;
+        };
+        /** ReportFilterOut */
+        ReportFilterOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Value
+             * @description Valor del filtro tal como se muestra
+             */
+            value: string;
+        };
+        /**
+         * ReportFormat
+         * @enum {string}
+         */
+        ReportFormat: "json" | "csv" | "pdf";
+        /** ReportOut */
+        ReportOut: {
+            /** Columns */
+            columns: components["schemas"]["ReportColumnOut"][];
+            /**
+             * Currency
+             * @default PEN
+             */
+            currency: string;
+            /** Filters */
+            filters: components["schemas"]["ReportFilterOut"][];
+            /**
+             * Generated At
+             * Format: date-time
+             */
+            generated_at: string;
+            /** Notes */
+            notes: string[];
+            /**
+             * Report
+             * @description events, cash, inventory, inventory_movements, purchases…
+             */
+            report: string;
+            /**
+             * Rows
+             * @description Una entrada por fila, por `key`
+             */
+            rows: {
+                [key: string]: string | number | boolean | null;
+            }[];
+            /** Title */
+            title: string;
+            /** Totals */
+            totals: components["schemas"]["ReportTotalOut"][];
+        };
+        /** ReportTotalOut */
+        ReportTotalOut: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Type */
+            type: string;
+            /**
+             * Value
+             * @description `null`: sin dato o monto oculto
+             */
+            value: string | number | boolean | null;
+        };
         /** RequestLineIn */
         RequestLineIn: {
             /**
@@ -3718,6 +4410,87 @@ export interface components {
              * @example 12.5
              */
             quantity: string;
+        };
+        /** RequirementLineOut */
+        RequirementLineOut: {
+            /**
+             * Available
+             * @description Libre en almacén (stock menos reservas vigentes)
+             * @example 12.500
+             */
+            available: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Out
+             * @description Ya salió para el evento
+             * @example 12.500
+             */
+            out: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Required
+             * @description Lo que piden los servicios contratados
+             * @example 12.500
+             */
+            required: string;
+            /**
+             * Reserved
+             * @description Apartado para el evento
+             * @example 12.500
+             */
+            reserved: string;
+            /**
+             * Shortage
+             * @description Falta comprar: requerido - salido - reservado - disponible (mínimo 0)
+             * @example 12.500
+             */
+            shortage: string;
+            unit: components["schemas"]["Unit"];
+        };
+        /** ReservationLineIn */
+        ReservationLineIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Cantidad a apartar, se suma a la ya reservada
+             * @example 12.5
+             */
+            quantity: string;
+        };
+        /** ReservationOut */
+        ReservationOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /**
+             * Quantity
+             * @description Total vigente reservado para el evento
+             * @example 12.500
+             */
+            quantity: string;
+            unit: components["schemas"]["Unit"];
+        };
+        /** ReservationsIn */
+        ReservationsIn: {
+            /** Lines */
+            lines: components["schemas"]["ReservationLineIn"][];
         };
         /**
          * Role
@@ -4094,6 +4867,14 @@ export interface components {
             /** Signer Name */
             signer_name: string;
         };
+        /** StatusOut */
+        StatusOut: {
+            /**
+             * Available
+             * @description Falso si no hay clave del proveedor configurada
+             */
+            available: boolean;
+        };
         /** SupplierIn */
         SupplierIn: {
             /** Address */
@@ -4162,6 +4943,23 @@ export interface components {
              */
             token_type: string;
             user: components["schemas"]["MeOut"];
+        };
+        /** ToolUseOut */
+        ToolUseOut: {
+            /** Error */
+            error: boolean;
+            /**
+             * Input
+             * @description Parámetros con que se ejecutó
+             */
+            input: {
+                [key: string]: unknown;
+            };
+            /**
+             * Name
+             * @description Función de consulta ejecutada
+             */
+            name: string;
         };
         /**
          * Unit
@@ -4891,6 +5689,177 @@ export interface operations {
             };
             /** @description `activity.responsible_invalid` */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    assistant_ask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AskIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AskOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description `assistant.rate_limited` (30 por hora, R-IA-2) */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `assistant.provider_error` */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `assistant.unavailable` (sin clave del proveedor) */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    assistant_log_list: {
+        parameters: {
+            query?: {
+                user_id?: string | null;
+                /** @description Desde (con zona horaria) */
+                since?: string | null;
+                /** @description Hasta (con zona horaria) */
+                until?: string | null;
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueryLogPageOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assistant_status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatusOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -7556,6 +8525,192 @@ export interface operations {
             };
         };
     };
+    inventory_event_requirement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventRequirementOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.event_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_reservations_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReservationsIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReservationOut"][];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.event_not_found`, `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.insufficient_available`, `inventory.event_not_assignable`, `inventory.product_inactive` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    inventory_reservations_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.reservation_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     inventory_movements_adjustment: {
         parameters: {
             query?: never;
@@ -8321,6 +9476,126 @@ export interface operations {
             };
         };
     };
+    inventory_recipe_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.service_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    inventory_recipe_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                service_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecipeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.service_not_found`, `inventory.product_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `inventory.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     movements_list: {
         parameters: {
             query?: {
@@ -8803,6 +10078,73 @@ export interface operations {
             };
         };
     };
+    purchasing_purchases_from_event: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                event_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.event_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.no_shortages` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.validation` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     purchasing_purchases_get: {
         parameters: {
             query?: never;
@@ -8932,6 +10274,77 @@ export interface operations {
             };
         };
     };
+    purchasing_purchases_expense: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` (exige también `payments:record`) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.purchase_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.expense_not_available`, `purchasing.expense_already_registered` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     purchasing_purchases_order: {
         parameters: {
             query?: never;
@@ -8999,6 +10412,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    purchasing_purchases_pdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                purchase_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description La orden de compra en PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `purchasing.purchase_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -9860,6 +11331,62 @@ export interface operations {
             };
         };
     };
+    reports_cash: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     reports_cash_flow: {
         parameters: {
             query: {
@@ -9880,6 +11407,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CashFlowOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_events: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                status?: components["schemas"]["EventStatus"] | null;
+                client_id?: string | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
                 };
             };
             /** @description `auth.not_authenticated`, `auth.session_expired` */
@@ -10023,6 +11608,237 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_inventory: {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["Category"] | null;
+                include_inactive?: boolean;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reports_inventory_movements: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                kind?: components["schemas"]["MovementKind"] | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_purchases: {
+        parameters: {
+            query: {
+                /** @description Desde (incluido) */
+                from: string;
+                /** @description Hasta (incluido); como máximo 366 días */
+                to: string;
+                status?: components["schemas"]["PurchaseStatus"] | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `report.range_invalid` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reports_staff: {
+        parameters: {
+            query?: {
+                function?: string | null;
+                active?: boolean | null;
+                /** @description json (por defecto), csv o pdf */
+                format?: components["schemas"]["ReportFormat"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description El reporte en JSON o, con `format`, el archivo CSV o PDF */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportOut"];
+                    "application/pdf": unknown;
+                    "text/csv": unknown;
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description `report.unavailable` */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
                 };
             };
         };
