@@ -144,6 +144,7 @@ const MESSAGES: Record<string, string> = {
   "staff.audit_invalid": "No se pudo registrar la auditoría del cambio.",
   "staff.not_found": "No se encontró el trabajador.",
   "report.range_invalid": "El rango de fechas no es válido: la fecha final no puede ser anterior a la inicial y el rango no supera 366 días.",
+  "report.unavailable": "Este reporte estará disponible cuando el módulo de personal publique sus datos.",
   "auth.invalid_credentials": "Correo o contraseña incorrectos, o la cuenta está desactivada.",
   "auth.forbidden": "Tu rol no tiene permiso para esta operación.",
   "auth.session_expired": "Tu sesión terminó. Vuelve a iniciar sesión.",
