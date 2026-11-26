@@ -128,8 +128,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Logo withName={!collapsed} light />
           </span>
         </div>
-        <div className="flex flex-1 flex-col lg:hidden">{nav(true)}</div>
-        <div className="hidden flex-1 flex-col lg:flex">{nav(collapsed)}</div>
+        <div className="flex min-h-0 flex-1 flex-col lg:hidden">{nav(true)}</div>
+        <div className="hidden min-h-0 flex-1 flex-col lg:flex">{nav(collapsed)}</div>
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
