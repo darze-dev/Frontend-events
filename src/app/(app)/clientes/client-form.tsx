@@ -12,17 +12,24 @@ import { errorMessage } from "@/lib/api/errors";
 
 type Props = {
   client: Client | null; // null = cliente nuevo
-  onSaved: () => void;
+  onSaved: (saved: Client | null) => void;
   onClose: () => void;
+  // Texto ya escrito en otra pantalla (p. ej. el buscador de la cotización): si son solo dígitos
+  // se propone como número de documento; si no, como nombre.
+  initialText?: string;
 };
 
-export function ClientForm({ client, onSaved, onClose }: Props) {
+export function ClientForm({ client, onSaved, onClose, initialText = "" }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const isNew = client === null;
+  const typed = initialText.trim();
+  const typedIsDocument = /^\d+$/.test(typed);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // El formulario puede abrirse dentro de otro (la cotización): que su envío no llegue a ese.
+    event.stopPropagation();
     const form = new FormData(event.currentTarget);
     const text = (name: string) => String(form.get(name) ?? "").trim();
     const contact = {
@@ -35,7 +42,7 @@ export function ClientForm({ client, onSaved, onClose }: Props) {
     setSaving(true);
     setError(null);
     try {
-      const { error: apiError } = isNew
+      const { data, error: apiError } = isNew
         ? await api.POST("/v1/clients", {
             body: {
               ...contact,
@@ -48,7 +55,7 @@ export function ClientForm({ client, onSaved, onClose }: Props) {
             body: contact,
           });
       if (apiError) setError(errorMessage(apiError));
-      else onSaved();
+      else onSaved((data as Client | undefined) ?? null);
     } catch {
       setError(errorMessage(null));
     } finally {
@@ -61,7 +68,7 @@ export function ClientForm({ client, onSaved, onClose }: Props) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <label className={labelClass}>
           Nombre o razón social <span className="text-danger">*</span>
-          <input name="name" required autoFocus defaultValue={client?.name} className={fieldClass} />
+          <input name="name" required autoFocus defaultValue={client?.name ?? (typedIsDocument ? "" : typed)} className={fieldClass} />
         </label>
 
         <div className="grid grid-cols-3 gap-3">
@@ -83,7 +90,7 @@ export function ClientForm({ client, onSaved, onClose }: Props) {
               name="document_number"
               required={isNew}
               inputMode="numeric"
-              defaultValue={client?.document_number}
+              defaultValue={client?.document_number ?? (typedIsDocument ? typed : "")}
               disabled={!isNew}
               className={fieldClass}
             />
