@@ -137,3 +137,7 @@ export type WorkerStatus = components["schemas"]["WorkerStatus"];
 export type AssistantAnswer = components["schemas"]["AskOut"];
 export type AssistantToolUse = components["schemas"]["ToolUseOut"];
 export type AssistantLogEntry = components["schemas"]["QueryLogEntryOut"];
+// Valoración de una respuesta (correcta/incorrecta) e historial propio (HU40).
+export type AssistantFeedback = components["schemas"]["FeedbackOut"];
+export type AssistantFeedbackValue = AssistantFeedback["value"];
+export type MyQuery = components["schemas"]["MyQueryOut"];

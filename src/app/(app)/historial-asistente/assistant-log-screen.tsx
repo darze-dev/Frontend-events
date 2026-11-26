@@ -5,6 +5,7 @@
 // Solo se consulta: nadie lo modifica. Las fechas se muestran en hora de Lima; la API las guarda en UTC.
 import { Fragment, useCallback, useEffect, useState } from "react";
 
+import { FeedbackBadge } from "@/components/assistant-feedback";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
 import { fieldClass, labelClass, secondaryButton } from "@/components/ui/styles";
@@ -153,6 +154,7 @@ export function AssistantLogScreen() {
                   <th className="px-4 py-3 font-medium">Pregunta</th>
                   <th className="px-4 py-3 font-medium">Funciones</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
+                  <th className="px-4 py-3 font-medium">Valoración</th>
                   <th className="px-4 py-3 text-right font-medium">Tokens</th>
                   <th className="w-10 px-2 py-3">
                     <span className="sr-only">Detalle</span>
@@ -174,6 +176,9 @@ export function AssistantLogScreen() {
                         <td className="px-4 py-3">
                           <StatusBadge status={entry.status} />
                         </td>
+                        <td className="px-4 py-3">
+                          <FeedbackBadge value={entry.feedback?.value} />
+                        </td>
                         <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
                           {number.format(entry.input_tokens + entry.output_tokens)}
                         </td>
@@ -183,7 +188,7 @@ export function AssistantLogScreen() {
                       </tr>
                       {isOpen && (
                         <tr id={`detail-${entry.id}`} className="bg-surface-muted/50">
-                          <td colSpan={7} className="px-4 pb-4">
+                          <td colSpan={8} className="px-4 pb-4">
                             <Detail entry={entry} />
                           </td>
                         </tr>
@@ -206,6 +211,9 @@ export function AssistantLogScreen() {
                   </div>
                   <p className="mt-1 text-sm tabular-nums text-muted">{dateTime.format(new Date(entry.created_at))}</p>
                   <p className="mt-2 break-words text-sm">{entry.question}</p>
+                  <div className="mt-2">
+                    <FeedbackBadge value={entry.feedback?.value} />
+                  </div>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <p className="text-xs text-muted">
                       {entry.tools.length > 0 ? toolSummary(entry.tools) : "Sin funciones"} ·{" "}
@@ -315,6 +323,13 @@ function Detail({ entry }: { entry: AssistantLogEntry }) {
             ))}
           </ul>
         )}
+      </div>
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted">Valoración del usuario</p>
+        <div className="mt-1 flex flex-wrap items-center gap-2">
+          <FeedbackBadge value={entry.feedback?.value} />
+          {entry.feedback?.comment && <span className="break-words text-muted">«{entry.feedback.comment}»</span>}
+        </div>
       </div>
       <p className="text-xs text-muted tabular-nums">
         {number.format(entry.input_tokens)} tokens de entrada · {number.format(entry.output_tokens)} de salida ·{" "}
