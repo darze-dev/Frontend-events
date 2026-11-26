@@ -4,6 +4,7 @@
 // Pendiente de firma → "Registrar firma y adelanto" (un solo paso, R-CON-1).
 // Pendiente o firmado → "Anular", con motivo y devolución opcional (R-CON-3).
 // Firmado → "Convertir en evento" (HU10); si ya es evento, "Ver evento" y no se anula (R-EVT-3).
+// Pendiente o firmado → "Descargar PDF" (HU43); anulado, deshabilitado.
 // Con `payments:record`, la tarjeta "Cuenta" reemplaza la lista simple de pagos (HU19–HU20).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -24,6 +25,7 @@ import { formatDate } from "@/lib/quotes";
 import { ContractStatusBadge } from "../contract-status-badge";
 import { CancelForm } from "./cancel-form";
 import { ConvertForm } from "./convert-form";
+import { DownloadPdfButton } from "./download-pdf-button";
 import { SignForm } from "./sign-form";
 
 export function ContractDetail() {
@@ -95,6 +97,7 @@ export function ContractDetail() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <DownloadPdfButton contract={contract} onError={setError} />
             {contract.status === "PENDING_SIGNATURE" && (
               <button type="button" onClick={() => setDialog("sign")} className={primaryButton}>
                 <Icon name="pen" className="size-4" />
@@ -121,6 +124,7 @@ export function ContractDetail() {
             )}
           </div>
         </div>
+        {error && <ErrorAlert message={error} />}
         {notice && (
           <div role="status" className="flex items-center gap-2 rounded-lg bg-success/10 p-3 text-sm text-success">
             <Icon name="check" className="size-4 shrink-0" />
