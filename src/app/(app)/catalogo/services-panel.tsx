@@ -12,6 +12,9 @@ import { api, type Category, type PriceUnit, type Service } from "@/lib/api/clie
 import { errorMessage } from "@/lib/api/errors";
 import { formatSoles } from "@/lib/money";
 
+import { useAuth } from "@/components/auth-provider";
+
+import { RecipeForm } from "./recipe-form";
 import { RowActions } from "./row-actions";
 import { ServiceForm } from "./service-form";
 
@@ -30,6 +33,9 @@ export function ServicesPanel({ canManage }: { canManage: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<Service | "new" | null>(null);
   const [deactivating, setDeactivating] = useState<Service | null>(null);
+  const [recipeOf, setRecipeOf] = useState<Service | null>(null);
+  const { can } = useAuth();
+  const canRecipe = can("inventory:read") || can("inventory:manage");
 
   // Todas las categorías (también las desactivadas) para mostrar el nombre de cada servicio.
   useEffect(() => {
@@ -147,7 +153,7 @@ export function ServicesPanel({ canManage }: { canManage: boolean }) {
                   <th className="px-4 py-3 font-medium">Cobro</th>
                   <th className="whitespace-nowrap px-4 py-3 text-right font-medium">Precio ref.</th>
                   <th className="px-4 py-3 font-medium">Estado</th>
-                  {canManage && (
+                  {(canManage || canRecipe) && (
                     <th className="px-4 py-3">
                       <span className="sr-only">Acciones</span>
                     </th>
@@ -173,13 +179,18 @@ export function ServicesPanel({ canManage }: { canManage: boolean }) {
                     <td className="px-4 py-3">
                       <StatusBadge active={service.active} />
                     </td>
-                    {canManage && (
+                    {(canManage || canRecipe) && (
                       <td className="px-4 py-3">
-                        <RowActions
-                          active={service.active}
-                          onEdit={() => setEditing(service)}
-                          onStatus={() => onStatus(service)}
-                        />
+                        <div className="flex items-center justify-end gap-1">
+                          {canRecipe && <RecipeButton onClick={() => setRecipeOf(service)} name={service.name} />}
+                          {canManage && (
+                            <RowActions
+                              active={service.active}
+                              onEdit={() => setEditing(service)}
+                              onStatus={() => onStatus(service)}
+                            />
+                          )}
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -205,13 +216,16 @@ export function ServicesPanel({ canManage }: { canManage: boolean }) {
                   </span>
                 </p>
                 {service.description && <p className="mt-1 text-sm text-muted">{service.description}</p>}
-                {canManage && (
-                  <div className="mt-4 border-t border-line pt-3">
-                    <RowActions
-                      active={service.active}
-                      onEdit={() => setEditing(service)}
-                      onStatus={() => onStatus(service)}
-                    />
+                {(canManage || canRecipe) && (
+                  <div className="mt-4 flex items-center justify-end gap-1 border-t border-line pt-3">
+                    {canRecipe && <RecipeButton onClick={() => setRecipeOf(service)} name={service.name} />}
+                    {canManage && (
+                      <RowActions
+                        active={service.active}
+                        onEdit={() => setEditing(service)}
+                        onStatus={() => onStatus(service)}
+                      />
+                    )}
                   </div>
                 )}
               </li>
@@ -232,6 +246,8 @@ export function ServicesPanel({ canManage }: { canManage: boolean }) {
         />
       )}
 
+      {recipeOf && <RecipeForm service={recipeOf} canEdit={can("inventory:manage")} onClose={() => setRecipeOf(null)} />}
+
       {deactivating && (
         <ConfirmDialog
           title="Desactivar servicio"
@@ -242,5 +258,19 @@ export function ServicesPanel({ canManage }: { canManage: boolean }) {
         />
       )}
     </div>
+  );
+}
+
+function RecipeButton({ onClick, name }: { onClick: () => void; name: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Insumos de ${name}`}
+      className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-primary hover:bg-primary-soft"
+    >
+      <Icon name="box" className="size-4" />
+      Insumos
+    </button>
   );
 }
