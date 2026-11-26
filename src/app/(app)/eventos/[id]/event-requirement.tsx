@@ -21,7 +21,8 @@ function fetchRequirement(eventId: string) {
   return api.GET("/v1/inventory/events/{event_id}/requirement", { params: { path: { event_id: eventId } } });
 }
 
-export function EventRequirement({ event }: { event: Event }) {
+// `refreshKey` cambia cuando otra parte de la pantalla mueve stock (salida, devolución, merma).
+export function EventRequirement({ event, refreshKey = 0 }: { event: Event; refreshKey?: number }) {
   const { can } = useAuth();
   const canManage = can("inventory:manage");
   const canBuy = can("purchasing:manage");
@@ -45,7 +46,7 @@ export function EventRequirement({ event }: { event: Event }) {
   useEffect(() => {
     const timer = setTimeout(load, 0);
     return () => clearTimeout(timer);
-  }, [load]);
+  }, [load, refreshKey]);
 
   async function release(line: Line) {
     setBusy(true);

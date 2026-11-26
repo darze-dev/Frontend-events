@@ -30,6 +30,7 @@ export function EventMaterials({ event }: { event: Event }) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [recording, setRecording] = useState<Recording | null>(null);
+  const [requirementKey, setRequirementKey] = useState(0);
   const picked = { id: event.id, label: `${event.code} · ${event.client_name} · ${formatDate(event.event_date)}` };
 
   const load = useCallback(async () => {
@@ -49,7 +50,7 @@ export function EventMaterials({ event }: { event: Event }) {
 
   return (
     <div className="space-y-4">
-      <EventRequirement event={event} />
+      <EventRequirement event={event} refreshKey={requirementKey} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
           {pendingCount > 0
@@ -168,6 +169,7 @@ export function EventMaterials({ event }: { event: Event }) {
               `${MOVEMENT_KINDS[recording.kind].label} de ${product.name} registrada. Quedan ${formatQuantityWithUnit(result.stock, product.unit)} en el almacén.`,
             );
             setRecording(null);
+            setRequirementKey((k) => k + 1);
             void load();
           }}
         />
