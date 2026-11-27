@@ -7,6 +7,8 @@
 // y bitácora de observaciones (HU13). En "Resumen", con `payments:record`, la tarjeta "Cuenta"
 // del contrato del evento (HU19); con `finance:read`, el "Resultado económico" (HU22).
 // Con `inventory:read`, la pestaña "Materiales": salió, volvió, merma y falta devolver (HU26).
+// Feature 025: pestaña "Personal" con `staff_roster:read`: el administrador gestiona las asignaciones
+// con su pago (HU17); el encargado de eventos solo ve quién está designado, sin pagos ni botones.
 // HU14: botón "Ficha" a la ficha consolidada; `?pestana=` abre una pestaña (enlaces de la ficha).
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -29,12 +31,14 @@ import { CancelEventForm } from "./cancel-event-form";
 import { EventFollowUp } from "./event-follow-up";
 import { EventHistory } from "./event-history";
 import { EventMaterials } from "./event-materials";
+import { EventStaff } from "./event-staff";
 import { EventStepper } from "./event-stepper";
 import { PlanningForm } from "./planning-form";
 
 const ALL_TABS = [
   { id: "resumen", label: "Resumen" },
   { id: "seguimiento", label: "Seguimiento" },
+  { id: "personal", label: "Personal" }, // con `staff_roster:read` (025)
   { id: "materiales", label: "Materiales" }, // con `inventory:read` (CA-26.6)
   { id: "historial", label: "Historial" }, // CA-11.5
 ] as const;
@@ -51,7 +55,10 @@ export function EventDetail() {
   const [warning, setWarning] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [planning, setPlanning] = useState(false);
-  const tabs = ALL_TABS.filter((t) => t.id !== "materiales" || can("inventory:read"));
+  const tabs = ALL_TABS.filter(
+    (t) =>
+      (t.id !== "materiales" || can("inventory:read")) && (t.id !== "personal" || can("staff_roster:read")),
+  );
   const requested = tabs.find((t) => t.id === searchParams.get("pestana"))?.id;
   const [tab, setTab] = useState<Tab>(requested ?? "resumen");
   const [moneyVersion, setMoneyVersion] = useState(0); // cambia al pagar o anular: refresca el resultado
@@ -197,6 +204,12 @@ export function EventDetail() {
           </button>
         ))}
       </div>
+
+      {tab === "personal" && (
+        <div role="tabpanel" id="panel-personal" aria-labelledby="tab-personal">
+          <EventStaff event={event} />
+        </div>
+      )}
 
       {tab === "materiales" && (
         <div role="tabpanel" id="panel-materiales" aria-labelledby="tab-materiales">
