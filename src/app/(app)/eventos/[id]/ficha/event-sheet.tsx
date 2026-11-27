@@ -2,8 +2,8 @@
 
 // Ficha consolidada del evento (HU14): una sola hoja de solo lectura con todo lo necesario antes
 // de ejecutar el evento. Sale de una sola petición (CA-14.7) y cada tarjeta enlaza a su pantalla
-// para editar (R-FIC-1). "Finanzas" llega vacía sin `payments:record` (CA-14.5) y "Equipo", vacía
-// mientras el módulo de personal no la exponga (CA-14.3). Se imprime con el navegador (CA-14.8).
+// para editar (R-FIC-1). "Finanzas" llega vacía sin `payments:record` (CA-14.5) y "Personal designado" (sin
+// pago), sin `staff_roster:read` (025): compras no ve esa tarjeta. Se imprime con el navegador (CA-14.8).
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useId, useState, type ReactNode } from "react";
@@ -143,27 +143,27 @@ export function EventSheet() {
           )}
         </SheetCard>
 
-        <SheetCard title="Equipo">
-          {staff === null ? (
-            <Empty>Sin información de personal todavía.</Empty>
-          ) : staff.length === 0 ? (
-            <Empty>Todavía no hay personal asignado.</Empty>
-          ) : (
-            <ul className="divide-y divide-line">
-              {staff.map((member) => (
-                <li key={`${member.worker_id}-${member.starts_at}`} className="flex flex-wrap items-baseline justify-between gap-x-3 py-2.5 text-sm">
-                  <span>
-                    <span className="font-medium">{member.name}</span>
-                    <span className="block text-xs text-muted">{member.role}</span>
-                  </span>
-                  <span className="whitespace-nowrap tabular-nums text-muted">
-                    {formatShiftLima(member.starts_at, member.ends_at)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </SheetCard>
+        {staff !== null && (
+          <SheetCard title="Personal designado" href={`${eventHref}?pestana=personal`} linkLabel="Ver personal">
+            {staff.length === 0 ? (
+              <Empty>Todavía no hay personal designado.</Empty>
+            ) : (
+              <ul className="divide-y divide-line">
+                {staff.map((member) => (
+                  <li key={`${member.worker_id}-${member.starts_at}`} className="flex flex-wrap items-baseline justify-between gap-x-3 py-2.5 text-sm">
+                    <span>
+                      <span className="font-medium">{member.name}</span>
+                      <span className="block text-xs text-muted">{member.role}</span>
+                    </span>
+                    <span className="whitespace-nowrap tabular-nums text-muted">
+                      {formatShiftLima(member.starts_at, member.ends_at)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </SheetCard>
+        )}
 
         <SheetCard
           title="Materiales"

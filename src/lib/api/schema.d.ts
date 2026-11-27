@@ -1855,7 +1855,8 @@ export interface paths {
          * @description Evento, cliente, servicios, personal, materiales, pagos y seguimiento en una petición.
          *
          *     Se arma en el momento con lo que cada módulo sabe (CA-14.7). `account` va vacío sin
-         *     `payments:record` (CA-14.5); `staff`, vacío mientras no haya información de personal.
+         *     `payments:record` (CA-14.5); `staff` (personal designado, sin pago) va vacío sin
+         *     `staff_roster:read` (025).
          */
         get: operations["reports_event_sheet"];
         put?: never;
@@ -1965,6 +1966,74 @@ export interface paths {
          * @description Registra un trabajador nuevo, siempre activo. El documento no puede repetirse.
          */
         post: operations["staff_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/assignments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Event Assignments
+         * @description Lista las asignaciones vigentes de un evento, ordenadas por hora de inicio.
+         */
+        get: operations["staff_assignment_list"];
+        put?: never;
+        /**
+         * Register Assignment
+         * @description Crea una asignación activa y devuelve la vista con el evento y el trabajador.
+         */
+        post: operations["staff_assignment_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/assignments/{assignment_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Assignment
+         * @description Detalle de una asignación, activa o anulada.
+         */
+        get: operations["staff_assignment_get"];
+        /**
+         * Update Assignment
+         * @description Reemplazo completo de los campos editables; el motivo es obligatorio.
+         */
+        put: operations["staff_assignment_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/assignments/{assignment_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Assignment
+         * @description Anulación lógica con motivo; repetir la operación es idempotente.
+         */
+        post: operations["staff_assignment_cancel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2326,6 +2395,234 @@ export interface components {
              * @description Funciones consultadas (transparencia)
              */
             tools: components["schemas"]["ToolUseOut"][];
+        };
+        /**
+         * AssignmentCancel
+         * @description Cuerpo de `POST /v1/staff/assignments/{id}/cancel`.
+         */
+        AssignmentCancel: {
+            /**
+             * Reason
+             * @description Motivo de la anulación
+             */
+            reason: string;
+        };
+        /**
+         * AssignmentConflictOut
+         * @description Conflicto de horario incluido en el 409, sin datos personales del trabajador.
+         */
+        AssignmentConflictOut: {
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Event Code */
+            event_code: string;
+            /**
+             * Event Date
+             * Format: date
+             */
+            event_date: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+        };
+        /**
+         * AssignmentCreate
+         * @description Cuerpo de `POST /v1/staff/assignments`: alta de una asignación.
+         */
+        AssignmentCreate: {
+            /**
+             * Date
+             * Format: date
+             * @description Fecha local de America/Lima
+             */
+            date: string;
+            /**
+             * End Time
+             * Format: time
+             * @description Hora local de fin; si es menor, termina al día siguiente
+             */
+            end_time: string;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            /** @description Si se omite, se copia de la ficha del trabajador */
+            function?: components["schemas"]["WorkerFunction"] | null;
+            /**
+             * Function Description
+             * @description Solo con la función OTHER
+             */
+            function_description?: string | null;
+            /**
+             * Pay Cents
+             * @description Pago acordado en céntimos: S/ 45.00 = 4500
+             */
+            pay_cents: number;
+            /**
+             * Start Time
+             * Format: time
+             * @description Hora local de inicio
+             */
+            start_time: string;
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
+        };
+        /**
+         * AssignmentListOut
+         * @description Listado de asignaciones de un evento.
+         */
+        AssignmentListOut: {
+            /** Items */
+            items: components["schemas"]["AssignmentOut"][];
+        };
+        /**
+         * AssignmentOut
+         * @description Asignación devuelta por la API: horario local, instantes UTC y pago.
+         */
+        AssignmentOut: {
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "PEN";
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /**
+             * End At
+             * Format: date-time
+             */
+            end_at: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Event Code */
+            event_code: string | null;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            event_status: components["schemas"]["EventStatus"] | null;
+            function: components["schemas"]["WorkerFunction"];
+            /** Function Description */
+            function_description: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Pay Cents */
+            pay_cents: number;
+            /**
+             * Start At
+             * Format: date-time
+             */
+            start_at: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["AssignmentStatus"];
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
+            /** Worker Name */
+            worker_name: string;
+        };
+        /**
+         * AssignmentProblem
+         * @description Problem Details de asignaciones; documenta la extensión `conflicts` del 409.
+         */
+        AssignmentProblem: {
+            /** Code */
+            code: string;
+            /** Conflicts */
+            conflicts?: components["schemas"]["AssignmentConflictOut"][];
+            /** Detail */
+            detail: string;
+            /** Status */
+            status: number;
+            /** Title */
+            title: string;
+            /**
+             * Type
+             * @default about:blank
+             */
+            type: string;
+        };
+        /**
+         * AssignmentStatus
+         * @description Estado de la asignación: se anula lógicamente, no se borra ni se reactiva (R-ASG-8).
+         * @enum {string}
+         */
+        AssignmentStatus: "ACTIVE" | "CANCELLED";
+        /**
+         * AssignmentUpdate
+         * @description Cuerpo de `PUT /v1/staff/assignments/{id}`: reemplazo completo de los editables.
+         */
+        AssignmentUpdate: {
+            /**
+             * Date
+             * Format: date
+             * @description Fecha local de America/Lima
+             */
+            date: string;
+            /**
+             * End Time
+             * Format: time
+             * @description Hora local de fin; si es menor, termina al día siguiente
+             */
+            end_time: string;
+            /**
+             * Event Id
+             * @description Inmutable; enviarlo responde staff.assignment_immutable
+             */
+            event_id?: string | null;
+            /** @description Función de la asignación */
+            function: components["schemas"]["WorkerFunction"];
+            /**
+             * Function Description
+             * @description Solo con la función OTHER
+             */
+            function_description?: string | null;
+            /**
+             * Pay Cents
+             * @description Pago acordado en céntimos: S/ 45.00 = 4500
+             */
+            pay_cents: number;
+            /**
+             * Reason
+             * @description Motivo del cambio
+             */
+            reason: string;
+            /**
+             * Start Time
+             * Format: time
+             * @description Hora local de inicio
+             */
+            start_time: string;
+            /**
+             * Worker Id
+             * @description Inmutable; enviarlo responde staff.assignment_immutable
+             */
+            worker_id?: string | null;
         };
         /** CancelIn */
         CancelIn: {
@@ -3405,7 +3702,7 @@ export interface components {
             services: components["schemas"]["SheetServiceOut"][];
             /**
              * Staff
-             * @description Vacío (`null`): sin información de personal (CA-14.3)
+             * @description Personal designado (sin pago). `null` sin el permiso `staff_roster:read`
              */
             staff: components["schemas"]["SheetStaffOut"][] | null;
         };
@@ -3872,7 +4169,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "assistant_log:read";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "staff:assign" | "staff_roster:read" | "assistant_log:read";
         /**
          * PlanningWarning
          * @description R-EVT-9: cambió la fecha o el horario; el personal asignado puede tener otro horario.
@@ -4939,11 +5236,17 @@ export interface components {
              * Format: date-time
              */
             ends_at: string;
+            function: components["schemas"]["WorkerFunction"];
+            /**
+             * Function Description
+             * @description Solo con la función `OTHER`
+             */
+            function_description: string | null;
             /** Name */
             name: string;
             /**
              * Role
-             * @description Función en el evento
+             * @description Función en el evento, legible
              */
             role: string;
             /**
@@ -12263,6 +12566,334 @@ export interface operations {
                 };
             };
             /** @description Dato inválido: `staff.name_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_assignment_list: {
+        parameters: {
+            query: {
+                /** @description Evento cuyas asignaciones vigentes se listan */
+                event_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentListOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.assignment_not_found`, `staff.event_not_found`, `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_assignment_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.assignment_not_found`, `staff.event_not_found`, `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.worker_inactive`, `staff.event_not_assignable`, `staff.assignment_overlap` (con `conflicts`), `staff.assignment_immutable`, `staff.worker_has_future_assignments` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentProblem"];
+                };
+            };
+            /** @description Validación: `staff.assignment_schedule_invalid`, `staff.assignment_date_invalid`, `staff.assignment_function_required`, `staff.assignment_pay_invalid`, `staff.assignment_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_assignment_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.assignment_not_found`, `staff.event_not_found`, `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    staff_assignment_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.assignment_not_found`, `staff.event_not_found`, `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.worker_inactive`, `staff.event_not_assignable`, `staff.assignment_overlap` (con `conflicts`), `staff.assignment_immutable`, `staff.worker_has_future_assignments` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentProblem"];
+                };
+            };
+            /** @description Validación: `staff.assignment_schedule_invalid`, `staff.assignment_date_invalid`, `staff.assignment_function_required`, `staff.assignment_pay_invalid`, `staff.assignment_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_assignment_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignmentCancel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.assignment_not_found`, `staff.event_not_found`, `staff.not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.worker_inactive`, `staff.event_not_assignable`, `staff.assignment_overlap` (con `conflicts`), `staff.assignment_immutable`, `staff.worker_has_future_assignments` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssignmentProblem"];
+                };
+            };
+            /** @description Validación: `staff.assignment_schedule_invalid`, `staff.assignment_date_invalid`, `staff.assignment_function_required`, `staff.assignment_pay_invalid`, `staff.assignment_reason_required`, etc. */
             422: {
                 headers: {
                     [name: string]: unknown;
