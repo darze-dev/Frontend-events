@@ -133,6 +133,9 @@ export type WorkerFunction = components["schemas"]["WorkerFunction"];
 export type WorkerType = components["schemas"]["WorkerType"];
 export type WorkerDocumentType = components["schemas"]["WorkerDocumentType"];
 export type WorkerStatus = components["schemas"]["WorkerStatus"];
+// Asignaciones de personal a un evento (HU17): horario local de Lima y pago acordado en céntimos.
+export type Assignment = components["schemas"]["AssignmentOut"];
+export type AssignmentConflict = components["schemas"]["AssignmentConflictOut"];
 // Asistente de consulta con IA (HU35–HU40).
 export type AssistantAnswer = components["schemas"]["AskOut"];
 export type AssistantToolUse = components["schemas"]["ToolUseOut"];

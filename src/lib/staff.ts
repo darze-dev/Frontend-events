@@ -1,5 +1,5 @@
 // Textos del personal (HU15) que comparten la lista, el formulario y la ficha.
-import type { WorkerDocumentType, WorkerFunction, WorkerSummary, WorkerType } from "@/lib/api/client";
+import type { EventStatus, WorkerDocumentType, WorkerFunction, WorkerSummary, WorkerType } from "@/lib/api/client";
 
 // Lista fija del sistema más "otro", que exige una descripción (CA-15.18, CA-15.25).
 export const WORKER_FUNCTIONS: Record<WorkerFunction, string> = {
@@ -29,6 +29,9 @@ export function functionLabel(worker: Pick<WorkerSummary, "function" | "function
   if (worker.function === "OTHER") return worker.function_description || WORKER_FUNCTIONS.OTHER;
   return WORKER_FUNCTIONS[worker.function];
 }
+
+// Estados del evento en los que se asigna, edita o anula personal (R-ASG-10, R-ASG-18).
+export const ASSIGNABLE_STATUSES: EventStatus[] = ["SCHEDULED", "CONFIRMED", "IN_PROGRESS"];
 
 // Igual que el backend (CA-15.19): quita espacios y guiones. "12 345-678" → "12345678".
 export function normalizeDocument(text: string): string {
