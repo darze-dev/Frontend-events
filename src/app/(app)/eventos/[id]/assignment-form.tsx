@@ -7,18 +7,22 @@
 // trabajador, el backend responde 409 con los conflictos y se muestran aquí (R-ASG-5).
 import { useEffect, useState, type FormEvent } from "react";
 
+import { useAuth } from "@/components/auth-provider";
 import { ErrorAlert } from "@/components/ui/alert";
 import { Modal } from "@/components/ui/modal";
+import { Tag } from "@/components/ui/tag";
 import { fieldClass, labelClass, primaryButton, secondaryButton } from "@/components/ui/styles";
 import {
   api,
   type Assignment,
   type AssignmentConflict,
+  type AvailabilityItem,
   type Event,
   type WorkerFunction,
   type WorkerSummary,
 } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
+import { AVAILABILITY_STATES, kindLabel } from "@/lib/availability";
 import { centsToSolesText, solesToCents } from "@/lib/money";
 import { formatDate, formatTime } from "@/lib/quotes";
 import { FUNCTION_DESCRIPTION_MAX, WORKER_FUNCTIONS } from "@/lib/staff";
@@ -41,6 +45,36 @@ export function AssignmentForm({ event, assignment, onSaved, onClose }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [conflicts, setConflicts] = useState<AssignmentConflict[]>([]);
   const [saving, setSaving] = useState(false);
+  // Horario del formulario: con él se consulta la disponibilidad del trabajador elegido (HU16).
+  const { can } = useAuth();
+  const [slot, setSlot] = useState({
+    date: assignment?.date ?? event.event_date,
+    start: formatTime(assignment?.start_time ?? event.start_time),
+    end: formatTime(assignment?.end_time ?? event.end_time),
+  });
+  const [availability, setAvailability] = useState<AvailabilityItem | null>(null);
+  const showAvailability = isNew && can("staff:availability");
+
+  // Estado del trabajador (libre, ocupado, no disponible) en el horario del formulario. Es solo
+  // informativo: no bloquea asignar, y si la consulta falla, simplemente no se muestra.
+  useEffect(() => {
+    if (!showAvailability || !workerId || !slot.date || !slot.start || !slot.end || slot.start === slot.end) return;
+    let current = true;
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await api.GET("/v1/staff/availability", {
+          params: { query: { from_date: slot.date, to_date: slot.date, start_time: slot.start, end_time: slot.end } },
+        });
+        if (current) setAvailability(data?.items.find((item) => item.worker_id === workerId) ?? null);
+      } catch {
+        if (current) setAvailability(null);
+      }
+    }, 300);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [showAvailability, workerId, slot]);
 
   // Solo trabajadores activos (R-ASG-2). Busca 300 ms después de la última tecla.
   useEffect(() => {
@@ -63,6 +97,7 @@ export function AssignmentForm({ event, assignment, onSaved, onClose }: Props) {
   // La ficha propone la función del trabajador; el administrador puede elegir otra (R-ASG-6).
   function pickWorker(id: string) {
     setWorkerId(id);
+    setAvailability(null);
     const worker = workers.find((w) => w.id === id);
     if (worker?.function) {
       setWorkerFunction(worker.function);
@@ -152,6 +187,22 @@ export function AssignmentForm({ event, assignment, onSaved, onClose }: Props) {
                 ))}
               </select>
             </label>
+            {showAvailability && workerId && availability && (
+              <div className="flex flex-wrap items-center gap-2 text-sm" aria-live="polite">
+                <span className="text-muted">En este horario:</span>
+                <Tag label={AVAILABILITY_STATES[availability.state].label} className={AVAILABILITY_STATES[availability.state].className} />
+                {availability.unavailabilities.map((item) => (
+                  <span key={item.id} className="text-muted">
+                    {kindLabel(item)}
+                  </span>
+                ))}
+                {availability.conflicts.map((item, index) => (
+                  <span key={index} className="text-muted">
+                    {item.event_code ?? "otro evento"} {formatTime(item.start_time)}–{formatTime(item.end_time)}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-sm">
@@ -199,7 +250,8 @@ export function AssignmentForm({ event, assignment, onSaved, onClose }: Props) {
               type="date"
               name="date"
               required
-              defaultValue={assignment?.date ?? event.event_date}
+              value={slot.date}
+              onChange={(e) => setSlot({ ...slot, date: e.target.value })}
               className={fieldClass}
             />
           </label>
@@ -209,7 +261,8 @@ export function AssignmentForm({ event, assignment, onSaved, onClose }: Props) {
               type="time"
               name="start_time"
               required
-              defaultValue={formatTime(assignment?.start_time ?? event.start_time)}
+              value={slot.start}
+              onChange={(e) => setSlot({ ...slot, start: e.target.value })}
               className={fieldClass}
             />
           </label>
@@ -219,7 +272,8 @@ export function AssignmentForm({ event, assignment, onSaved, onClose }: Props) {
               type="time"
               name="end_time"
               required
-              defaultValue={formatTime(assignment?.end_time ?? event.end_time)}
+              value={slot.end}
+              onChange={(e) => setSlot({ ...slot, end: e.target.value })}
               className={fieldClass}
             />
           </label>

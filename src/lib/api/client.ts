@@ -136,6 +136,15 @@ export type WorkerStatus = components["schemas"]["WorkerStatus"];
 // Asignaciones de personal a un evento (HU17): horario local de Lima y pago acordado en céntimos.
 export type Assignment = components["schemas"]["AssignmentOut"];
 export type AssignmentConflict = components["schemas"]["AssignmentConflictOut"];
+// Disponibilidad del personal (HU16): estado por trabajador e indisponibilidades planificadas.
+export type Availability = components["schemas"]["AvailabilityOut"];
+export type AvailabilityItem = components["schemas"]["AvailabilityItem"];
+export type AvailabilityState = components["schemas"]["AvailabilityState"];
+export type AvailabilityConflict = components["schemas"]["AvailabilityConflict"];
+export type Unavailability = components["schemas"]["UnavailabilityOut"];
+export type UnavailabilityDetail = components["schemas"]["UnavailabilityDetail"];
+export type UnavailabilityKind = components["schemas"]["UnavailabilityKind"];
+export type UnavailabilityStatus = components["schemas"]["UnavailabilityStatus"];
 // Asistente de consulta con IA (HU35–HU40).
 export type AssistantAnswer = components["schemas"]["AskOut"];
 export type AssistantToolUse = components["schemas"]["ToolUseOut"];

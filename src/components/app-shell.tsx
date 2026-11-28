@@ -36,6 +36,7 @@ export const SECTIONS: { title: string; items: MenuItem[] }[] = [
       { href: "/eventos", label: "Eventos", icon: "calendar", permission: "events:read" },
       { href: "/almacen", label: "Almacén", icon: "box", permission: "inventory:read" },
       { href: "/personal", label: "Personal", icon: "idCard", permission: "staff:manage" },
+      { href: "/personal/disponibilidad", label: "Disponibilidad", icon: "calendar", permission: "staff:availability" },
     ],
   },
   {
@@ -89,7 +90,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           <div className="space-y-1">
             {section.items.map((item) => {
-              const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+              const matches = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+              // Una ruta anidada ("/personal/disponibilidad") no deja también activa a su padre.
+              const active = matches(item.href) && !section.items.some((other) => other.href.length > item.href.length && matches(other.href));
               return (
                 <Link
                   key={item.href}

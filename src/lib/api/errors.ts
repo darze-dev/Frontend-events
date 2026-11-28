@@ -164,6 +164,18 @@ const MESSAGES: Record<string, string> = {
   "staff.event_not_found": "No se encontró el evento.",
   "staff.worker_has_future_assignments": "El trabajador tiene asignaciones futuras: anúlalas antes de desactivarlo.",
   "staff.worker_inactive": "El trabajador está desactivado: elige uno activo.",
+  "staff.availability_window_invalid":
+    "La ventana de la consulta no es válida: revisa las fechas y las horas.",
+  "staff.availability_range_too_large": "El rango de la consulta no puede superar 31 días.",
+  "staff.unavailability_schedule_invalid": "La hora de fin no puede ser igual a la de inicio.",
+  "staff.unavailability_kind_required": "Elige el tipo de indisponibilidad.",
+  "staff.unavailability_worker_invalid": "Elige el trabajador de la indisponibilidad.",
+  "staff.unavailability_description_required": "Con el tipo «Otro», describe el motivo.",
+  "staff.unavailability_description_not_allowed": "Solo el tipo «Otro» lleva descripción.",
+  "staff.unavailability_description_too_long": "La descripción no puede superar 120 caracteres.",
+  "staff.unavailability_reason_required": "Indica el motivo.",
+  "staff.unavailability_not_found": "No se encontró la indisponibilidad.",
+  "staff.unavailability_cancelled": "La indisponibilidad ya está anulada: no se puede modificar.",
   "report.range_invalid": "El rango de fechas no es válido: la fecha final no puede ser anterior a la inicial y el rango no supera 366 días.",
   "report.unavailable": "Este reporte estará disponible cuando el módulo de personal publique sus datos.",
   "assistant.unavailable": "El asistente no está disponible por ahora.",
@@ -184,6 +196,8 @@ const DETAIL_FIRST = new Set([
   "purchasing.validation",
   // CA-15.3: el detalle identifica el documento repetido ("… con DNI 12345678.").
   "staff.document_duplicated",
+  // HU16: el detalle dice qué falla de la ventana (fechas al revés, una sola hora, duración cero).
+  "staff.availability_window_invalid",
 ]);
 
 // RN20: el backend informa el disponible en `detail` ("… solo hay 3.000 disponible.").
