@@ -6,6 +6,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { useAuth } from "@/components/auth-provider";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -28,6 +29,7 @@ const STATUS_FILTERS: Record<StatusFilter, string> = {
 };
 
 export function StaffScreen() {
+  const { can } = useAuth();
   const [text, setText] = useState("");
   const [workerFunction, setWorkerFunction] = useState<WorkerFunction | "">("");
   const [status, setStatus] = useState<StatusFilter>("ACTIVE");
@@ -86,10 +88,18 @@ export function StaffScreen() {
           <h1 className="text-2xl font-semibold">Personal</h1>
           <p className="mt-1 text-sm text-muted">Cocineros, mozos, bartenders y demás trabajadores de los eventos.</p>
         </div>
-        <button type="button" onClick={() => setEditing("new")} className={primaryButton}>
-          <Icon name="plus" className="size-4" />
-          Nuevo trabajador
-        </button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          {can("staff:availability") && (
+            <Link href="/personal/disponibilidad" className={secondaryButton}>
+              <Icon name="calendar" className="size-4" />
+              Disponibilidad
+            </Link>
+          )}
+          <button type="button" onClick={() => setEditing("new")} className={primaryButton}>
+            <Icon name="plus" className="size-4" />
+            Nuevo trabajador
+          </button>
+        </div>
       </header>
 
       <div className="grid gap-3 rounded-xl border border-line bg-surface p-4 sm:grid-cols-2 lg:grid-cols-4">

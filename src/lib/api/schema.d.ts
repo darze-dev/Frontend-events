@@ -2040,6 +2040,90 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/staff/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Staff Availability
+         * @description Consulta de solo lectura la disponibilidad en una ventana de hasta 31 días.
+         */
+        get: operations["staff_availability_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/unavailability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Unavailability
+         * @description Lista indisponibilidades, incluidas las anuladas, sin escribir nada.
+         */
+        get: operations["staff_unavailability_list"];
+        put?: never;
+        /**
+         * Register Unavailability
+         * @description Registra una indisponibilidad activa y audita el alta con el usuario.
+         */
+        post: operations["staff_unavailability_register"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/unavailability/{unavailability_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Update Unavailability
+         * @description Reemplazo completo de los campos editables; el motivo es obligatorio.
+         */
+        put: operations["staff_unavailability_update"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/unavailability/{unavailability_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel Unavailability
+         * @description Anulación lógica con motivo; repetir la operación es idempotente.
+         */
+        post: operations["staff_unavailability_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/staff/{worker_id}": {
         parameters: {
             query?: never;
@@ -2624,6 +2708,83 @@ export interface components {
              */
             worker_id?: string | null;
         };
+        /**
+         * AvailabilityConflict
+         * @description Asignación que ocupa parte de la ventana, sin datos sensibles (R-DIS-9).
+         *
+         *     Solo código y fecha del evento, horario local de la asignación y su función.
+         *     Nunca pago, tarifa, documento ni teléfono (CA-16.8). `event_code` y
+         *     `event_date` son `None` cuando la asignación ocupa pero su evento no existe;
+         *     las horas siempre están presentes porque salen de la asignación.
+         */
+        AvailabilityConflict: {
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Event Code */
+            event_code: string | null;
+            /** Event Date */
+            event_date: string | null;
+            function: components["schemas"]["WorkerFunction"] | null;
+            /** Function Description */
+            function_description: string | null;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+        };
+        /**
+         * AvailabilityItem
+         * @description Disponibilidad de un trabajador en la ventana consultada.
+         */
+        AvailabilityItem: {
+            /** Conflicts */
+            conflicts: components["schemas"]["AvailabilityConflict"][];
+            function: components["schemas"]["WorkerFunction"] | null;
+            /** Function Description */
+            function_description: string | null;
+            /** Name */
+            name: string;
+            state: components["schemas"]["AvailabilityState"];
+            /** Unavailabilities */
+            unavailabilities: components["schemas"]["UnavailabilityDetail"][];
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
+        };
+        /**
+         * AvailabilityOut
+         * @description Respuesta de `GET /v1/staff/availability`: ventana UTC y lista plana.
+         */
+        AvailabilityOut: {
+            /**
+             * From
+             * Format: date-time
+             * @description Inicio UTC de la ventana (exclusivo)
+             */
+            from: string;
+            /** Items */
+            items: components["schemas"]["AvailabilityItem"][];
+            /**
+             * To
+             * Format: date-time
+             * @description Fin UTC de la ventana (exclusivo)
+             */
+            to: string;
+        };
+        /**
+         * AvailabilityState
+         * @description Disponibilidad de un trabajador en una ventana, por precedencia UNAVAILABLE > BUSY > FREE.
+         *
+         *     HU16: `UNAVAILABLE` (indisponibilidad registrada) prevalece sobre `BUSY` (asignación).
+         * @enum {string}
+         */
+        AvailabilityState: "FREE" | "BUSY" | "UNAVAILABLE";
         /** CancelIn */
         CancelIn: {
             /** Reason */
@@ -4169,7 +4330,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "staff:assign" | "staff_roster:read" | "assistant_log:read";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "staff:assign" | "staff_roster:read" | "staff:availability" | "assistant_log:read";
         /**
          * PlanningWarning
          * @description R-EVT-9: cambió la fecha o el horario; el personal asignado puede tener otro horario.
@@ -5399,6 +5560,176 @@ export interface components {
              * @description Función de consulta ejecutada
              */
             name: string;
+        };
+        /**
+         * UnavailabilityCancel
+         * @description Cuerpo de `POST /v1/staff/unavailability/{id}/cancel`.
+         */
+        UnavailabilityCancel: {
+            /**
+             * Reason
+             * @description Motivo de la anulación
+             */
+            reason: string;
+        };
+        /**
+         * UnavailabilityCreate
+         * @description Cuerpo de `POST /v1/staff/unavailability`: alta con fecha y horas locales.
+         */
+        UnavailabilityCreate: {
+            /**
+             * Date
+             * Format: date
+             * @description Fecha local de America/Lima
+             */
+            date: string;
+            /**
+             * Description
+             * @description Obligatoria solo con el tipo OTHER
+             */
+            description?: string | null;
+            /**
+             * End Time
+             * Format: time
+             * @description Hora local de fin; si es menor, termina al día siguiente
+             */
+            end_time: string;
+            kind: components["schemas"]["UnavailabilityKind"];
+            /**
+             * Start Time
+             * Format: time
+             * @description Hora local de inicio
+             */
+            start_time: string;
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
+        };
+        /**
+         * UnavailabilityDetail
+         * @description Indisponibilidad activa que explica un estado `UNAVAILABLE` (CA-16.9).
+         */
+        UnavailabilityDetail: {
+            /** Description */
+            description: string | null;
+            /**
+             * End At
+             * Format: date-time
+             */
+            end_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["UnavailabilityKind"];
+            /**
+             * Start At
+             * Format: date-time
+             */
+            start_at: string;
+        };
+        /**
+         * UnavailabilityKind
+         * @description Motivo de la indisponibilidad: `OTHER` exige descripción (HU16, R-DIS-1).
+         * @enum {string}
+         */
+        UnavailabilityKind: "VACATION" | "LEAVE" | "REST" | "OTHER";
+        /**
+         * UnavailabilityListOut
+         * @description Listado de indisponibilidades (incluye las anuladas).
+         */
+        UnavailabilityListOut: {
+            /** Items */
+            items: components["schemas"]["UnavailabilityOut"][];
+        };
+        /**
+         * UnavailabilityOut
+         * @description Indisponibilidad devuelta por la API: fecha/horas locales e instantes UTC.
+         */
+        UnavailabilityOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Description */
+            description: string | null;
+            /**
+             * End At
+             * Format: date-time
+             */
+            end_at: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            kind: components["schemas"]["UnavailabilityKind"];
+            /**
+             * Start At
+             * Format: date-time
+             */
+            start_at: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            status: components["schemas"]["UnavailabilityStatus"];
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
+        };
+        /**
+         * UnavailabilityStatus
+         * @description Estado de la indisponibilidad: se anula lógicamente, nunca se borra ni reactiva (HU16).
+         * @enum {string}
+         */
+        UnavailabilityStatus: "ACTIVE" | "CANCELLED";
+        /**
+         * UnavailabilityUpdate
+         * @description Cuerpo de `PUT /v1/staff/unavailability/{id}`: reemplazo de los editables.
+         */
+        UnavailabilityUpdate: {
+            /**
+             * Date
+             * Format: date
+             * @description Fecha local de America/Lima
+             */
+            date: string;
+            /**
+             * Description
+             * @description Obligatoria solo con el tipo OTHER
+             */
+            description?: string | null;
+            /**
+             * End Time
+             * Format: time
+             * @description Hora local de fin; si es menor, termina al día siguiente
+             */
+            end_time: string;
+            kind: components["schemas"]["UnavailabilityKind"];
+            /**
+             * Reason
+             * @description Motivo del cambio
+             */
+            reason: string;
+            /**
+             * Start Time
+             * Format: time
+             * @description Hora local de inicio
+             */
+            start_time: string;
         };
         /**
          * Unit
@@ -12894,6 +13225,322 @@ export interface operations {
                 };
             };
             /** @description Validación: `staff.assignment_schedule_invalid`, `staff.assignment_date_invalid`, `staff.assignment_function_required`, `staff.assignment_pay_invalid`, `staff.assignment_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_availability_get: {
+        parameters: {
+            query: {
+                /** @description Primer día local (America/Lima) */
+                from_date: string;
+                /** @description Último día local (America/Lima) */
+                to_date: string;
+                /** @description Hora local de inicio */
+                start_time?: string | null;
+                /** @description Hora local de fin */
+                end_time?: string | null;
+                /** @description Filtro por función */
+                function?: components["schemas"]["WorkerFunction"] | null;
+                /** @description Filtro por estado */
+                state?: components["schemas"]["AvailabilityState"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AvailabilityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validación: `staff.availability_window_invalid`, `staff.availability_range_too_large`, `staff.unavailability_schedule_invalid`, `staff.unavailability_kind_required`, `staff.unavailability_description_required/not_allowed`, `staff.unavailability_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_unavailability_list: {
+        parameters: {
+            query?: {
+                /** @description Filtro por trabajador */
+                worker_id?: string | null;
+                /** @description Primer día local */
+                from_date?: string | null;
+                /** @description Último día local */
+                to_date?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnavailabilityListOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validación: `staff.availability_window_invalid`, `staff.availability_range_too_large`, `staff.unavailability_schedule_invalid`, `staff.unavailability_kind_required`, `staff.unavailability_description_required/not_allowed`, `staff.unavailability_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_unavailability_register: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnavailabilityCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnavailabilityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found`, `staff.unavailability_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.worker_inactive`, `staff.unavailability_cancelled` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validación: `staff.availability_window_invalid`, `staff.availability_range_too_large`, `staff.unavailability_schedule_invalid`, `staff.unavailability_kind_required`, `staff.unavailability_description_required/not_allowed`, `staff.unavailability_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_unavailability_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                unavailability_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnavailabilityUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnavailabilityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found`, `staff.unavailability_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.worker_inactive`, `staff.unavailability_cancelled` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validación: `staff.availability_window_invalid`, `staff.availability_range_too_large`, `staff.unavailability_schedule_invalid`, `staff.unavailability_kind_required`, `staff.unavailability_description_required/not_allowed`, `staff.unavailability_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_unavailability_cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                unavailability_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnavailabilityCancel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnavailabilityOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.not_found`, `staff.unavailability_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validación: `staff.availability_window_invalid`, `staff.availability_range_too_large`, `staff.unavailability_schedule_invalid`, `staff.unavailability_kind_required`, `staff.unavailability_description_required/not_allowed`, `staff.unavailability_reason_required`, etc. */
             422: {
                 headers: {
                     [name: string]: unknown;
