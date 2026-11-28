@@ -17,6 +17,7 @@ import { WORKER_DOCUMENTS, WORKER_FUNCTIONS, WORKER_TYPES } from "@/lib/staff";
 
 import { WorkerForm } from "../worker-form";
 import { WorkerStatusForm } from "../worker-status-form";
+import { WorkerAttendance } from "./worker-attendance";
 
 export function WorkerProfile() {
   const { id } = useParams<{ id: string }>();
@@ -123,6 +124,8 @@ export function WorkerProfile() {
       <p className="-mt-3 text-xs text-muted">
         La tarifa y la hora extra son referenciales: el pago se acuerda en cada asignación a un evento.
       </p>
+
+      <WorkerAttendance workerId={worker.id} workerName={worker.name} />
 
       {editing && (
         <WorkerForm
