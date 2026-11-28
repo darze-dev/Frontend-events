@@ -5,12 +5,15 @@
 // programado, confirmado o en ejecución; después queda de solo lectura (R-ASG-10).
 import { useCallback, useEffect, useState } from "react";
 
+import { AttendanceForm } from "@/components/attendance-form";
 import { useAuth } from "@/components/auth-provider";
 import { Icon } from "@/components/icons";
 import { ErrorAlert } from "@/components/ui/alert";
+import { Tag } from "@/components/ui/tag";
 import { primaryButton } from "@/components/ui/styles";
-import { api, type Assignment, type Event } from "@/lib/api/client";
+import { api, type Assignment, type Attendance, type Event } from "@/lib/api/client";
 import { errorMessage } from "@/lib/api/errors";
+import { ATTENDANCE_PENDING, ATTENDANCE_STATUS, attendanceDue } from "@/lib/attendance";
 import { formatSoles } from "@/lib/money";
 import { formatDate, formatTime } from "@/lib/quotes";
 import { ASSIGNABLE_STATUSES, functionLabel } from "@/lib/staff";
@@ -26,14 +29,33 @@ export function EventAssignments({ event }: { event: Event }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [editing, setEditing] = useState<Assignment | "new" | null>(null);
   const [cancelling, setCancelling] = useState<Assignment | null>(null);
+  // Asistencia (HU18): solo el administrador la ve y la registra cuando la asignación terminó.
+  const canAttend = can("staff:attendance");
+  const [attendance, setAttendance] = useState<Record<string, Attendance>>({});
+  const [recording, setRecording] = useState<Assignment | null>(null);
 
   const load = useCallback(async () => {
     const { data, error: apiError } = await api.GET("/v1/staff/assignments", {
       params: { query: { event_id: event.id } },
     });
-    setItems(data?.items ?? []);
+    const list = data?.items ?? [];
+    setItems(list);
     setError(apiError ? errorMessage(apiError) : null);
-  }, [event.id]);
+    if (!canAttend) return;
+    // El historial es por trabajador: se pide el de cada trabajador del evento, filtrado por él.
+    const workers = [...new Set(list.map((a) => a.worker_id))];
+    const pages = await Promise.all(
+      workers.map((worker_id) =>
+        api
+          .GET("/v1/staff/workers/{worker_id}/attendance", {
+            params: { path: { worker_id }, query: { event_id: event.id, page_size: 100 } },
+          })
+          .then(({ data: page }) => page?.items ?? [])
+          .catch(() => []),
+      ),
+    );
+    setAttendance(Object.fromEntries(pages.flat().map((row) => [row.assignment_id, row])));
+  }, [event.id, canAttend]);
 
   useEffect(() => {
     const timer = setTimeout(load, 0);
@@ -84,6 +106,7 @@ export function EventAssignments({ event }: { event: Event }) {
                 <th scope="col" className="px-2 py-2.5 font-medium">Función</th>
                 <th scope="col" className="px-2 py-2.5 font-medium">Horario</th>
                 <th scope="col" className="px-2 py-2.5 text-right font-medium">Pago acordado</th>
+                {canAttend && <th scope="col" className="px-2 py-2.5 font-medium">Asistencia</th>}
                 {canWrite && (
                   <th scope="col" className="px-4 py-2.5">
                     <span className="sr-only">Acciones</span>
@@ -106,6 +129,16 @@ export function EventAssignments({ event }: { event: Event }) {
                   <td className="whitespace-nowrap px-2 py-3 text-right align-top tabular-nums">
                     {formatSoles(assignment.pay_cents)}
                   </td>
+                  {canAttend && (
+                    <td className="whitespace-nowrap px-2 py-3 align-top">
+                      <AttendanceCell
+                        row={attendance[assignment.id]}
+                        due={attendanceDue(assignment)}
+                        onRecord={() => setRecording(assignment)}
+                        workerName={assignment.worker_name}
+                      />
+                    </td>
+                  )}
                   {canWrite && (
                     <td className="whitespace-nowrap px-4 py-3 text-right align-top">
                       <button
@@ -135,6 +168,7 @@ export function EventAssignments({ event }: { event: Event }) {
                   Total acordado
                 </th>
                 <td className="whitespace-nowrap px-2 py-2.5 text-right font-medium tabular-nums">{formatSoles(total)}</td>
+                {canAttend && <td />}
                 {canWrite && <td />}
               </tr>
             </tfoot>
@@ -156,6 +190,20 @@ export function EventAssignments({ event }: { event: Event }) {
         />
       )}
 
+      {recording && (
+        <AttendanceForm
+          assignmentId={recording.id}
+          workerName={recording.worker_name}
+          current={attendance[recording.id]?.attendance_status ?? null}
+          onClose={() => setRecording(null)}
+          onDone={(saved) => {
+            setNotice(attendance[recording.id]?.attendance_status ? "Asistencia corregida." : "Asistencia registrada.");
+            setAttendance((prev) => ({ ...prev, [saved.assignment_id]: saved }));
+            setRecording(null);
+          }}
+        />
+      )}
+
       {cancelling && (
         <AssignmentCancelForm
           assignment={cancelling}
@@ -168,5 +216,38 @@ export function EventAssignments({ event }: { event: Event }) {
         />
       )}
     </div>
+  );
+}
+
+// Estado de asistencia de una asignación y el botón para registrarla o corregirla. Antes de que
+// termine el horario no se puede registrar (R-ATT-5).
+function AttendanceCell({
+  row,
+  due,
+  onRecord,
+  workerName,
+}: {
+  row: Attendance | undefined;
+  due: boolean;
+  onRecord: () => void;
+  workerName: string;
+}) {
+  const status = row?.attendance_status ?? null;
+  const tag = status ? ATTENDANCE_STATUS[status] : ATTENDANCE_PENDING;
+  if (!due && !status) return <span className="text-xs text-muted">Al terminar el evento</span>;
+  return (
+    <span className="inline-flex items-center gap-2">
+      <Tag label={tag.label} className={tag.className} />
+      {due && (
+        <button
+          type="button"
+          onClick={onRecord}
+          aria-label={`${status ? "Corregir" : "Registrar"} la asistencia de ${workerName}`}
+          className="rounded-lg px-2 py-1 text-xs font-medium text-primary hover:bg-primary-soft"
+        >
+          {status ? "Corregir" : "Registrar"}
+        </button>
+      )}
+    </span>
   );
 }

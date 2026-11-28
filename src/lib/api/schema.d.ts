@@ -2020,6 +2020,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/staff/assignments/{assignment_id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update Attendance
+         * @description Registra el primer estado o corrige el vigente, auditando la corrección.
+         */
+        patch: operations["staff_attendance_update"];
+        trace?: never;
+    };
     "/v1/staff/assignments/{assignment_id}/cancel": {
         parameters: {
             query?: never;
@@ -2118,6 +2138,26 @@ export interface paths {
          * @description Anulación lógica con motivo; repetir la operación es idempotente.
          */
         post: operations["staff_unavailability_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff/workers/{worker_id}/attendance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Attendance History
+         * @description Historial del trabajador, incluidos anulados, con eventos anulables.
+         */
+        get: operations["staff_attendance_history"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2707,6 +2747,114 @@ export interface components {
              * @description Inmutable; enviarlo responde staff.assignment_immutable
              */
             worker_id?: string | null;
+        };
+        /**
+         * AttendanceHistoryPage
+         * @description Página del historial de asistencia de un trabajador.
+         */
+        AttendanceHistoryPage: {
+            /** Items */
+            items: components["schemas"]["AttendanceOut"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /**
+         * AttendanceOut
+         * @description Asignación con su asistencia vigente y el evento ya resuelto.
+         */
+        AttendanceOut: {
+            /**
+             * Assignment Id
+             * Format: uuid
+             */
+            assignment_id: string;
+            assignment_status: components["schemas"]["AssignmentStatus"];
+            /** Attendance Recorded At */
+            attendance_recorded_at: string | null;
+            /** Attendance Recorded By */
+            attendance_recorded_by: string | null;
+            /** Attendance Recorded By Id */
+            attendance_recorded_by_id: string | null;
+            attendance_status: components["schemas"]["AttendanceStatus"] | null;
+            /**
+             * Currency
+             * @constant
+             */
+            currency: "PEN";
+            /**
+             * End At
+             * Format: date-time
+             */
+            end_at: string;
+            /**
+             * End Time
+             * Format: time
+             */
+            end_time: string;
+            /** Event Code */
+            event_code: string | null;
+            /** Event Date */
+            event_date: string | null;
+            /**
+             * Event Id
+             * Format: uuid
+             */
+            event_id: string;
+            event_status: components["schemas"]["EventStatus"] | null;
+            function: components["schemas"]["WorkerFunction"];
+            /** Function Description */
+            function_description: string | null;
+            /** Pay Cents */
+            pay_cents: number;
+            /**
+             * Start At
+             * Format: date-time
+             */
+            start_at: string;
+            /**
+             * Start Time
+             * Format: time
+             */
+            start_time: string;
+            /**
+             * Worker Id
+             * Format: uuid
+             */
+            worker_id: string;
+            /** Worker Name */
+            worker_name: string;
+        };
+        /**
+         * AttendanceStatus
+         * @description Estado de asistencia: solo `ATTENDED`/`NOT_ATTENDED` (R-ATT-2).
+         * @enum {string}
+         */
+        AttendanceStatus: "ATTENDED" | "NOT_ATTENDED";
+        /**
+         * AttendanceUpdate
+         * @description Cuerpo de `PATCH /v1/staff/assignments/{id}/attendance`.
+         *
+         *     `status` es semánticamente obligatorio pero se declara opcional para que el
+         *     caso de uso devuelva `staff.attendance_status_invalid` con su `code`.
+         *     `reason` solo se exige cuando es una corrección; primer registro y mismo
+         *     estado lo ignoran.
+         */
+        AttendanceUpdate: {
+            /**
+             * Reason
+             * @description Motivo de la corrección; obligatorio solo al cambiar el estado (1..500 tras recortar). Se ignora en el primer registro y al repetir.
+             */
+            reason?: string | null;
+            /**
+             * Status
+             * @description ATTENDED o NOT_ATTENDED; la validación la hace el caso de uso
+             * @enum {unknown}
+             */
+            status?: "ATTENDED" | "NOT_ATTENDED";
         };
         /**
          * AvailabilityConflict
@@ -4330,7 +4478,7 @@ export interface components {
          * Permission
          * @enum {string}
          */
-        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "staff:assign" | "staff_roster:read" | "staff:availability" | "assistant_log:read";
+        Permission: "users:manage" | "access_log:read" | "clients:manage" | "catalog:read" | "catalog:manage" | "quotes:manage" | "dashboard:read" | "contracts:manage" | "payments:record" | "events:manage" | "events:read" | "inventory:read" | "inventory:manage" | "purchasing:manage" | "finance:read" | "event_notes:write" | "event_notes:edit_any" | "staff:manage" | "staff:assign" | "staff_roster:read" | "staff:availability" | "staff:attendance" | "assistant_log:read";
         /**
          * PlanningWarning
          * @description R-EVT-9: cambió la fecha o el horario; el personal asignado puede tener otro horario.
@@ -13164,6 +13312,77 @@ export interface operations {
             };
         };
     };
+    staff_attendance_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assignment_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttendanceUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceOut"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.assignment_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.attendance_not_due`, `staff.attendance_assignment_cancelled` */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validación: `staff.attendance_status_invalid`, `staff.attendance_reason_required` */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
     staff_assignment_cancel: {
         parameters: {
             query?: never;
@@ -13541,6 +13760,75 @@ export interface operations {
                 };
             };
             /** @description Validación: `staff.availability_window_invalid`, `staff.availability_range_too_large`, `staff.unavailability_schedule_invalid`, `staff.unavailability_kind_required`, `staff.unavailability_description_required/not_allowed`, `staff.unavailability_reason_required`, etc. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    staff_attendance_history: {
+        parameters: {
+            query?: {
+                /** @description Fecha mínima del evento (America/Lima), inclusiva */
+                from?: string | null;
+                /** @description Fecha máxima del evento (America/Lima), inclusiva */
+                to?: string | null;
+                /** @description Solo asignaciones de ese evento */
+                event_id?: string | null;
+                /** @description Número de página, desde 1 */
+                page?: number;
+                /** @description Tamaño de página, 1..100 */
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                worker_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AttendanceHistoryPage"];
+                };
+            };
+            /** @description `auth.not_authenticated`, `auth.session_expired` */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `auth.forbidden` */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `staff.worker_not_found` */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validación: `staff.attendance_date_range_invalid` (rango de fechas o paginación) */
             422: {
                 headers: {
                     [name: string]: unknown;
