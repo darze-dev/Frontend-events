@@ -9,7 +9,7 @@ import { ErrorAlert } from "@/components/ui/alert";
 import { Tag } from "@/components/ui/tag";
 import { fieldClass, labelClass, primaryButton } from "@/components/ui/styles";
 import { api, type Unavailability, type WorkerSummary } from "@/lib/api/client";
-import { formatSchedule, kindLabel } from "@/lib/availability";
+import { MAX_RANGE_DAYS, formatSchedule, kindLabel, lastAllowedDate } from "@/lib/availability";
 import { errorMessage } from "@/lib/api/errors";
 import { formatDate, todayInLima } from "@/lib/quotes";
 
@@ -20,7 +20,8 @@ export function UnavailabilityList() {
   const [workers, setWorkers] = useState<WorkerSummary[]>([]);
   const [workerId, setWorkerId] = useState("");
   const [fromDate, setFromDate] = useState(todayInLima);
-  const [toDate, setToDate] = useState("");
+  // El backend filtra por ventana: ambas fechas o ninguna, de hasta 31 días. Por defecto, el próximo mes.
+  const [toDate, setToDate] = useState(() => lastAllowedDate(todayInLima()));
   const [items, setItems] = useState<Unavailability[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -42,6 +43,10 @@ export function UnavailabilityList() {
   const names = useMemo(() => new Map(workers.map((w) => [w.id, w.name])), [workers]);
 
   const load = useCallback(async () => {
+    if (Boolean(fromDate) !== Boolean(toDate)) {
+      setError("Indica la fecha inicial y la final, o deja ambas vacías para ver todas.");
+      return;
+    }
     try {
       const { data, error: apiError } = await api.GET("/v1/staff/unavailability", {
         params: { query: { worker_id: workerId || null, from_date: fromDate || null, to_date: toDate || null } },
@@ -91,8 +96,19 @@ export function UnavailabilityList() {
         </label>
         <label className={labelClass}>
           Hasta
-          <input type="date" value={toDate} min={fromDate || undefined} onChange={(e) => setToDate(e.target.value)} className={fieldClass} />
+          <input
+            type="date"
+            value={toDate}
+            min={fromDate || undefined}
+            max={fromDate ? lastAllowedDate(fromDate) : undefined}
+            onChange={(e) => setToDate(e.target.value)}
+            className={fieldClass}
+          />
         </label>
+        <p className="text-xs text-muted sm:col-span-3">
+          Muestra las indisponibilidades que se cruzan con las fechas elegidas (máximo {MAX_RANGE_DAYS} días). Deja ambas
+          fechas vacías para verlas todas.
+        </p>
       </div>
 
       {notice && (
